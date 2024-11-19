@@ -36,17 +36,21 @@ function App() {
         <>
             <AppContext.Provider value={{ ...appState, setAppState }}>
                 <BrowserRouter>
-                               
-                                <Header />
-                                <Sidebar />
-                                <Routes>
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="*" element={<NotFound />} />
-                                    <Route path="/register" element={<Register />} />
-                                </Routes>
-                      
-                </BrowserRouter>
-            </AppContext.Provider>
+
+                    <Header />
+                    <Sidebar />
+                    <div className="min-h-screen flex flex-row pt-16">
+          <div className="ml-64 flex-grow p-4">
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="*" element={<NotFound />} />
+                                <Route path="/register" element={<Register />} />
+                            </Routes>
+                        </div>
+                    </div>
+
+            </BrowserRouter>
+        </AppContext.Provider >
         </>
     )
 }

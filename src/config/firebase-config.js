@@ -14,9 +14,9 @@ const firebaseConfig = {
     storageBucket: "next-discord-33a46.firebasestorage.app",
     messagingSenderId: "576739815121",
     appId: "1:576739815121:web:84d52f48eea0c736539ff0",
-    measurementId: "G-490DQ261FZ",
-};
-
+    measurementId: "G-490DQ261FZ"
+  };
+  
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 // the Firebase authentication handler

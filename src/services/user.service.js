@@ -24,25 +24,16 @@ export const getUserByHandle = async (handle) => {
  * @param {string} note - The note of the user.
  * @returns {Promise<void>}
  */
-export const createUserHandle = async (handle, uid, email, firstName, lastName, status, avatar, note) => {
+export const createUserHandle = async (handle, uid, email) => {
+    console.log( uid);
   const user = {
-    firstName,
-    lastName,
     handle,
     email,
     uid,
-    status,
-    avatar,
-    note,
-    friendList: [],
-    channelsAccess: [],
-    channelAdmin: [],
-    isAdmin: false,
-    isBlocked: false,
     createdOn: new Date().toString()
   };
 
-  await set(ref(db, `users/${handle}`), user);
+  return set(ref(db, `users/${handle}`), user);
 };
 
 /**
