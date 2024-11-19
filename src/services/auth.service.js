@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../config/firebase-config.js';
+import { auth } from '../config/firebase-config';
 
 /**
  * Registers a new user with email and password.
