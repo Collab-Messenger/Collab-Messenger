@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -14,7 +15,7 @@ const Header = () => {
                 <img src="logo.png" alt="App Logo" className="h-8" />
             </div>
 
-            <button className="btn btn-outline">Register</button>
+            <NavLink to='register'><button className="btn btn-outline">Register</button></NavLink>
             {/* Profile Button */}
             <div className="relative">
                 <button
