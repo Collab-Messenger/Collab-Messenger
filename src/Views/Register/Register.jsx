@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { createUserHandle, getUserByHandle } from '../../services/user.service.js';
 import { registerUser } from '../../services/auth.service.js';
-import { AppContext } from '../../store/app-context.js';
+import { AppContext } from '../../Store/app-context.js';
 import { useNavigate } from 'react-router-dom';
 
 

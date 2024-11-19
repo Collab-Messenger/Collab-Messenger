@@ -7,10 +7,11 @@ import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { auth } from './config/firebase-config';
-import { AppContext } from './store/app-context'
+import { AppContext } from './Store/app-context'
 import { getUserData } from './services/user.service'
 import { NotFound } from './components/NotFound/NotFound'
 import { Register } from './Views/Register/Register'
+import { Login } from './Views/Login/Login'
 
 function App() {
     const [appState, setAppState] = useState({

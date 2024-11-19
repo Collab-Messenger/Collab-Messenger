@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-
+import { AppContext } from '../../Store/app-context';
+import { useContext } from 'react';
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const { userData, setAppState } = useContext(AppContext);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
+        
     };
 
     return (
@@ -16,6 +19,13 @@ const Header = () => {
             </div>
 
             <NavLink to='register'><button className="btn btn-outline">Register</button></NavLink>
+            {userData ? (
+                <>
+                    <NavLink to='/profile'><button className='profile-btn'>Profile</button></NavLink>
+                </>
+            ) : (
+                <NavLink to='/login'><button className='login-btn'>Login</button></NavLink>
+            )}
             {/* Profile Button */}
             <div className="relative">
                 <button
