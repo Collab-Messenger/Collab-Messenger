@@ -1,7 +1,7 @@
 import styles from "./Home.module.css";
 import searchIcon from "../../assets/icons/icons.svg";
 
-export function Home() {
+function Home() {
   return (
     <div className={styles.homepageContainer}>
       <h1 className={styles.header}>Welcome to the Next-Discord App!</h1>
@@ -16,3 +16,5 @@ export function Home() {
     </div>
   );
 }
+
+export default Home
