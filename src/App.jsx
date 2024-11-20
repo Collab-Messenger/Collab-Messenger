@@ -7,11 +7,12 @@ import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { auth } from './config/firebase-config';
-import { AppContext } from './Store/app-context'
+import { AppContext } from './store/app-context'
 import { getUserData } from './services/user.service'
 import { NotFound } from './components/NotFound/NotFound'
 import { Register } from './Views/Register/Register'
 import { Login } from './Views/Login/Login'
+import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
             });
         }
     }, [user]);
+
     return (
         <>
             <AppContext.Provider value={{ ...appState, setAppState }}>
@@ -48,11 +50,12 @@ function App() {
                                 <Route path="*" element={<NotFound />} />
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/login" element={<Login />} />
+                                <Route path="/profile" element={<Profile />} />
                                 <Route path="/teams" element={<Teams />} />
+                                <Route path="/users" element={<></>}/>
                             </Routes>
                         </div>
                     </div>
-
             </BrowserRouter>
         </AppContext.Provider >
         </>
