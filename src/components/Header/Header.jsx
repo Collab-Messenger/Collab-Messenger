@@ -19,13 +19,8 @@ const Header = () => {
             </div>
 
             <NavLink to='register'><button className="btn btn-outline">Register</button></NavLink>
-            {userData ? (
-                <>
-                    <NavLink to='/profile'><button className='profile-btn'>Profile</button></NavLink>
-                </>
-            ) : (
+       
                 <NavLink to='/login'><button className='login-btn'>Login</button></NavLink>
-            )}
             {/* Profile Button */}
             <div className="relative">
                 <button

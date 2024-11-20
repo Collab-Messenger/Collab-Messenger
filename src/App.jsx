@@ -12,6 +12,7 @@ import { getUserData } from './services/user.service'
 import { NotFound } from './components/NotFound/NotFound'
 import { Register } from './Views/Register/Register'
 import { Login } from './Views/Login/Login'
+import { Teams } from './Views/Teams/Teams'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -46,6 +47,8 @@ function App() {
                                 <Route path="/" element={<Home />} />
                                 <Route path="*" element={<NotFound />} />
                                 <Route path="/register" element={<Register />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/teams" element={<Teams />} />
                             </Routes>
                         </div>
                     </div>
