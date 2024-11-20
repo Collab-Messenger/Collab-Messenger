@@ -12,6 +12,11 @@ export const getUserByHandle = async (handle) => {
   return get(ref(db, `users/${handle}`));
 };
 
+export const getUsersByName = async (name) => {
+    console.log('getUserByName', name);
+    return get(ref(db, `users/${name}`));
+  };
+
 /**
  * Creates a new user handle.
  * @param {string} handle - The handle of the user.
