@@ -14,6 +14,7 @@ import { Register } from './Views/Register/Register'
 import { Login } from './Views/Login/Login'
 import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
+import AllUsers from './components/AllUsers/AllUsers'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -53,6 +54,7 @@ function App() {
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/teams" element={<Teams />} />
                                 <Route path="/users" element={<></>}/>
+                                <Route path='friends' element={<AllUsers/>}/>
                             </Routes>
                         </div>
                     </div>

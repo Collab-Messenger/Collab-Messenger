@@ -1,8 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { useContext, useState, useEffect } from 'react';
 import { auth } from '../../config/firebase-config';
 import { AppContext } from "../../store/app-context";
 import { useNavigate } from 'react-router-dom';
-import { updateUser, getUserByHandle } from '../../services/user.service';
+import { updateUser } from '../../services/user.service';
 import './Profile.css';
 
 /**
