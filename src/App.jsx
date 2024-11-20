@@ -13,6 +13,7 @@ import { NotFound } from './components/NotFound/NotFound'
 import { Register } from './Views/Register/Register'
 import { Login } from './Views/Login/Login'
 import { Profile } from './Views/Profile/Profile'
+import { Teams } from './Views/Teams/Teams'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -50,6 +51,7 @@ function App() {
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/profile" element={<Profile />} />
+                                <Route path="/teams" element={<Teams />} />
                                 <Route path="/users" element={<></>}/>
                             </Routes>
                         </div>
