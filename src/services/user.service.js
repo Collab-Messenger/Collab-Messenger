@@ -1,4 +1,4 @@
-import { get, set, ref, query, equalTo, orderByChild, update } from 'firebase/database';
+import { get, set, ref, query, equalTo, orderByChild, update, getDatabase } from 'firebase/database';
 import { db } from '../config/firebase-config.js';
 import { onValue } from 'firebase/database';
 
@@ -13,8 +13,15 @@ export const getUserByHandle = async (handle) => {
 };
 
 export const getUsersByName = async (name) => {
-    console.log('getUserByName', name);
-    return get(ref(db, `users/${name}`));
+    const db = getDatabase();
+    const dbRef = ref(db, 'users');
+    const q = query(dbRef, orderByChild('handle'), equalTo(name));
+    const snapshot = await get(q);
+    if (snapshot.exists()) {
+      return Object.values(snapshot.val());
+    } else {
+      return [];
+    }
   };
 
 /**
@@ -187,9 +194,10 @@ export const removeAdmin = async (handle) => {
  * @returns {Promise<Array>}
  */
 export const searchUsers = async (searchTerm) => {
-  const usersRef = ref(db, 'users');
-  const usersSnapshot = await get(usersRef);
-  const users = usersSnapshot.val();
-  const usersArray = Object.keys(users).map(key => users[key]);
-  return usersArray.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
-};
+    const db = getDatabase();
+    const usersRef = ref(db, 'users');
+    const usersSnapshot = await get(usersRef);
+    const users = usersSnapshot.val();
+    const usersArray = Object.keys(users).map(key => users[key]);
+    return usersArray.filter(user => user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
+  };

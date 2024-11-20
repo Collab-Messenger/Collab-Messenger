@@ -36,6 +36,7 @@ export const Profile = () => {
             userData: userForm
         })
     );
+    navigate('/profile');
    } catch (error) {
     alert('Error updating user');
     }

@@ -12,6 +12,17 @@ const Header = () => {
         
     };
 
+    const getUserInitials = (userData) => {
+        if (userData.firstName) {
+          const names = userData.firstName.split(' ');
+          const initials = names.map(name => name[0]).join('');
+          return initials.toUpperCase();
+        } else if (userData.email) {
+          return userData.email[0].toUpperCase();
+        }
+        return "User";
+      };
+
     return (
         <header className="flex items-center justify-between bg-gray-800 text-white p-4">
             {/* Logo Section */}
@@ -37,15 +48,23 @@ const Header = () => {
             <div className="relative">
                 <button
                     onClick={toggleMenu}
-                    className="profile-btn bg-blue-600 px-4 py-2 rounded-full"
+                    
                 >
-                    Profile
+                    <div className="avatar online placeholder">
+  <div className="bg-neutral text-neutral-content w-16 rounded-full">
+    <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
+  </div>
+</div>
                 </button>
+                
                 {menuOpen && (
                     <ul className="menu bg-base-200 w-56 absolute top-full mt-2 right-0 shadow-lg rounded-lg">
                         <NavLink to='profile'><li><a href="#item1">Profile View</a></li></NavLink>
-                        <li><a href="#item2">Item 2</a></li>
-                        <li><a href="#item3">Item 3</a></li>
+                        <li><a href="#item2">Friends</a></li>
+                        {userData && userData.isAdmin && (
+                            <li><a href="#item3">Admin</a></li>
+                        )}
+                        <li><a href="#item3">Log Out</a></li>
                     </ul>
                 )}
             </div>
