@@ -98,6 +98,15 @@ export const addPostToUser = async (handle, postId) => {
   await update(userRef, { posts });
 };
 
+export const addFriendRequestToUser = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const userSnapshot = await get(userRef);
+    const user = userSnapshot.val();
+    const friendRequests = user.friendRequests || [];
+    friendRequests.push(senderHandle);
+    await update(userRef, { friendRequests });
+  };
+
 /**
  * Removes a post from a user.
  * @param {string} handle - The handle of the user.

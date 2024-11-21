@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { AppContext } from '../../store/app-context';
 import { useContext } from 'react';
 import { Search } from '../Search/Search';
+import { PiDiscordLogoBold } from "react-icons/pi";
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -20,27 +21,17 @@ const Header = () => {
             const initialOne = firstNameI.map(name => name[0]).join('');
             const initialTwo = lastNameI.map(name => name[0]).join('');
             return (initialOne.toUpperCase() + initialTwo.toUpperCase());
-        } else if (userData.email) {
-            return userData.email[0].toUpperCase();
+        } else if (userData.handle) {
+            return userData.handle[0].toUpperCase();
         }
         return "User";
-    };
-
-    const handleLogout = () => {
-        auth.signOut().then(() => {
-            setAppState({
-                userForm: null,
-                userData: null
-            });
-            window.location.reload();
-        });
     };
 
     return (
         <header className="flex items-center justify-between bg-gray-800 text-white p-4">
             {/* Logo Section */}
             <div className="logo">
-                <img src="logo.png" alt="App Logo" className="h-8" />
+                <NavLink to='/'><PiDiscordLogoBold /></NavLink>
             </div>
 
             {userData ? (
@@ -79,6 +70,22 @@ const Header = () => {
                         
                     </ul>
                 )}
+                <div className="indicator">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-9"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+                {/*Notification bublle*/}
+        {/*<span className="badge badge-xs badge-primary indicator-item"></span>*/}
+      </div>
             </div>
         </header>
     );

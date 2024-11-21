@@ -1,27 +1,37 @@
 import { useLocation } from "react-router-dom";
 import styles from "./Home.module.css";
-import searchIcon from "../../assets/icons/icons.svg";
+import { useContext } from "react";
+import { AppContext } from "../../store/app-context";
+import { addFriendRequestToUser } from "../../services/user.service";
 
 export function Home() {
   const location = useLocation();
   const users = location.state?.users || [];
+  const { userData, setAppState } = useContext(AppContext);
 
-  return (
+
+
+return (
     <div className={styles.homepageContainer}>
-      <h1 className={styles.header}>Welcome to the Next-Discord App!</h1>
-      {users.length > 0 ? (
-        <ul>
-          {users.map((user) => (
-            <li key={user.uid}>{user.handle}</li>
-          ))}
-        </ul>
-      ) : (
-        <>
-          <p>We are thrilled to have you here!</p>
-          <p>You are all set to connect with family and friends through videos and message chat.</p>
-          <p>Dive in, explore and start making meaningful connections. Let's chat!</p>
-        </>
-      )}
+        <h1 className={styles.header}>Welcome to the Next-Discord App!</h1>
+        {users.length > 0 ? (
+            <ul>
+                {users
+                    .filter((user) => user.uid !== userData.uid)
+                    .map((user) => (
+                        <div key={user.uid}>
+                            <li>{user.handle}</li>
+                            <button onClick={() => addFriendRequestToUser(user.handle, userData.handle)}>Send Friend Request</button>
+                        </div>
+                    ))}
+            </ul>
+        ) : (
+            <>
+                <p>We are thrilled to have you here!</p>
+                <p>You are all set to connect with family and friends through videos and message chat.</p>
+                <p>Dive in, explore and start making meaningful connections. Let's chat!</p>
+            </>
+        )}
     </div>
-  );
+);
 }
