@@ -15,6 +15,7 @@ import { Login } from './Views/Login/Login'
 import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
 import AllUsers from './components/AllUsers/AllUsers'
+import { Notifications } from './Views/Notifications/Notifications'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -55,6 +56,7 @@ function App() {
                                 <Route path="/teams" element={<Teams />} />
                                 <Route path="/users" element={<></>}/>
                                 <Route path='friends' element={<AllUsers/>}/>
+                                <Route path='notifications' element={<Notifications/>}/>
                             </Routes>
                         </div>
                     </div>

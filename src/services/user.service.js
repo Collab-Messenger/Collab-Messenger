@@ -107,6 +107,8 @@ export const addFriendRequestToUser = async (handle, senderHandle) => {
     await update(userRef, { friendRequests });
   };
 
+  
+
 /**
  * Removes a post from a user.
  * @param {string} handle - The handle of the user.
