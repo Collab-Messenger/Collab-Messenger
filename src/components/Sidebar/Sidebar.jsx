@@ -1,7 +1,15 @@
 import { ToggleMode } from "../ToggleMode/ToggleMode";
 import styles from "./Sidebar.module.css";
+import CreateChatRoom from "../ChatRoom/chat-room";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+
+  const navigate = useNavigate();
+
+  const handleCreateChatRoom  = () =>{
+        navigate("createChatRoom")
+  }
   return (
     <div className={styles.sidebar}>
       <div className="join join-vertical" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -12,7 +20,7 @@ const Sidebar = () => {
           <button className="btn join-item">Channel 3</button>
         </div>
         <div className={styles.fixedBottom}>
-          <button className="btn join-item">+</button>
+          <button className="btn join-item" onClick={handleCreateChatRoom}>+</button>
           <ToggleMode />
         </div>
       </div>

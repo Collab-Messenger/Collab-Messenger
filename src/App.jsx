@@ -15,6 +15,8 @@ import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
 import AllUsers from './components/AllUsers/AllUsers'
 import { Notifications } from './Views/Notifications/Notifications'
+import Home from './Views/Home/Home'
+import CreateChatRoom from './components/ChatRoom/chat-room'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -56,6 +58,7 @@ function App() {
                                 <Route path="/users" element={<></>}/>
                                 <Route path='friends' element={<AllUsers/>}/>
                                 <Route path='notifications' element={<Notifications/>}/>
+                                <Route path='createChatRoom' element={<CreateChatRoom/>}/>
                             </Routes>
                         </div>
                     </div>
