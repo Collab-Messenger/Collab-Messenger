@@ -1,46 +1,94 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AppContext } from '../../Store/app-context';
+import { AppContext } from '../../store/app-context';
 import { useContext } from 'react';
+import { Search } from '../Search/Search';
+import { PiDiscordLogoBold } from "react-icons/pi";
+
+
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { userData, setAppState } = useContext(AppContext);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
-        
+
+    };
+
+    const getUserInitials = (userData) => {
+        if (userData.firstName) {
+            const firstNameI = userData.firstName.split(' ');
+            const lastNameI = userData.lastName.split(' ');
+            const initialOne = firstNameI.map(name => name[0]).join('');
+            const initialTwo = lastNameI.map(name => name[0]).join('');
+            return (initialOne.toUpperCase() + initialTwo.toUpperCase());
+        } else if (userData.handle) {
+            return userData.handle[0].toUpperCase();
+        }
+        return "User";
     };
 
     return (
         <header className="flex items-center justify-between bg-gray-800 text-white p-4">
             {/* Logo Section */}
             <div className="logo">
-                <img src="logo.png" alt="App Logo" className="h-8" />
+                <NavLink to='/'><PiDiscordLogoBold /></NavLink>
             </div>
 
-            <NavLink to='register'><button className="btn btn-outline">Register</button></NavLink>
             {userData ? (
                 <>
-                    <NavLink to='/profile'><button className='profile-btn'>Profile</button></NavLink>
+                    <Search />
                 </>
             ) : (
-                <NavLink to='/login'><button className='login-btn'>Login</button></NavLink>
+                <>
+                    <NavLink to='register'><button className="btn btn-outline">Register</button></NavLink>
+                    <NavLink to='/login'><button className='login-btn'>Login</button></NavLink>
+                </>
             )}
+
             {/* Profile Button */}
+
             <div className="relative">
                 <button
                     onClick={toggleMenu}
-                    className="profile-btn bg-blue-600 px-4 py-2 rounded-full"
+
                 >
-                    Profile
+                    <div className="avatar online placeholder">
+                        <div className="bg-neutral text-neutral-content w-16 rounded-full">
+                            <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
+                        </div>
+                    </div>
                 </button>
+
                 {menuOpen && (
                     <ul className="menu bg-base-200 w-56 absolute top-full mt-2 right-0 shadow-lg rounded-lg">
-                        <li><a href="#item1">Item 1</a></li>
-                        <li><a href="#item2" className="active">Item 2</a></li>
-                        <li><a href="#item3">Item 3</a></li>
+                        <NavLink to='profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
+                        <NavLink to='friends'><li><a href="#item2">Friends</a></li></NavLink>
+                        <li><a href="#item3">Set Status</a></li>
+                        {userData && userData.isAdmin && (
+                            <li><a href="#item4">Admin Panel</a></li>
+                        )}
+                        
                     </ul>
                 )}
+                <div className="indicator">
+        <NavLink to='notifications'>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-9"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        </NavLink>
+                {/*Notification bublle*/}
+        {/*<span className="badge badge-xs badge-primary indicator-item"></span>*/}
+      </div>
             </div>
         </header>
     );

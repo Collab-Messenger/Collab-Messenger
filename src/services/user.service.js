@@ -1,4 +1,4 @@
-import { get, set, ref, query, equalTo, orderByChild, update } from 'firebase/database';
+import { get, set, ref, query, equalTo, orderByChild, update, getDatabase } from 'firebase/database';
 import { db } from '../config/firebase-config.js';
 import { onValue } from 'firebase/database';
 
@@ -11,6 +11,18 @@ export const getUserByHandle = async (handle) => {
   console.log('getUserByHandle', handle);
   return get(ref(db, `users/${handle}`));
 };
+
+export const getUsersByName = async (name) => {
+    const db = getDatabase();
+    const dbRef = ref(db, 'users');
+    const q = query(dbRef, orderByChild('handle'), equalTo(name));
+    const snapshot = await get(q);
+    if (snapshot.exists()) {
+      return Object.values(snapshot.val());
+    } else {
+      return [];
+    }
+  };
 
 /**
  * Creates a new user handle.
@@ -85,6 +97,17 @@ export const addPostToUser = async (handle, postId) => {
   posts.push(postId);
   await update(userRef, { posts });
 };
+
+export const addFriendRequestToUser = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const userSnapshot = await get(userRef);
+    const user = userSnapshot.val();
+    const friendRequests = user.friendRequests || [];
+    friendRequests.push(senderHandle);
+    await update(userRef, { friendRequests });
+  };
+
+  
 
 /**
  * Removes a post from a user.
@@ -182,9 +205,10 @@ export const removeAdmin = async (handle) => {
  * @returns {Promise<Array>}
  */
 export const searchUsers = async (searchTerm) => {
-  const usersRef = ref(db, 'users');
-  const usersSnapshot = await get(usersRef);
-  const users = usersSnapshot.val();
-  const usersArray = Object.keys(users).map(key => users[key]);
-  return usersArray.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
-};
+    const db = getDatabase();
+    const usersRef = ref(db, 'users');
+    const usersSnapshot = await get(usersRef);
+    const users = usersSnapshot.val();
+    const usersArray = Object.keys(users).map(key => users[key]);
+    return usersArray.filter(user => user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
+  };
