@@ -21,7 +21,12 @@ return (
                     .map((user) => (
                         <div key={user.uid}>
                             <li>{user.handle}</li>
-                            <button onClick={() => addFriendRequestToUser(user.handle, userData.handle)}>Send Friend Request</button>
+                            {userData.friends && userData.friends.includes(user.handle) ? (
+                                <p>Already friends</p>
+                            ) : (
+                                <button onClick={() => addFriendRequestToUser(user.handle, userData.handle)}>Send Friend Request</button>
+                            )}
+                            
                         </div>
                     ))}
             </ul>
