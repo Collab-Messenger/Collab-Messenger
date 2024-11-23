@@ -131,6 +131,15 @@ export const acceptFriendRequest = async (handle, senderHandle) => {
         await update(senderRef, { friends: senderFriends });
     }
 };
+
+export const declineFriendRequest = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const userSnapshot = await get(userRef);
+    const user = userSnapshot.val();
+    const friendRequests = user.friendRequests || [];
+    const updatedFriendRequests = friendRequests.filter(request => request !== senderHandle);
+    await update(userRef, { friendRequests: updatedFriendRequests });
+}
   
 
 /**
