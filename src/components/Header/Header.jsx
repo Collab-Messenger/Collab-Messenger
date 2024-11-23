@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../store/app-context';
 import { useContext } from 'react';
 import { Search } from '../Search/Search';
 import { PiDiscordLogoBold } from "react-icons/pi";
+import { auth } from '../../config/firebase-config';
 
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { userData, setAppState } = useContext(AppContext);
+    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -27,6 +29,15 @@ const Header = () => {
         }
         return "User";
     };
+
+    const handleLogout = () => {
+        auth.signOut().then(() => {
+          setAppState({
+            userForm: null,
+            userData: null
+          });
+        });
+      };
 
     return (
         <header className="flex items-center justify-between bg-gray-800 text-white p-4">
@@ -68,6 +79,7 @@ const Header = () => {
                         {userData && userData.isAdmin && (
                             <li><a href="#item4">Admin Panel</a></li>
                         )}
+                        <NavLink to='/'><li><a href="#item3" onClick={handleLogout}>Logout</a></li></NavLink>
                         
                     </ul>
                 )}

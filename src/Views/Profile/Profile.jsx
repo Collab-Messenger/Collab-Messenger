@@ -43,7 +43,7 @@ export const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
+ const handleLogout = () => {
     auth.signOut().then(() => {
       setAppState({
         userForm: null,
