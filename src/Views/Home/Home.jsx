@@ -17,11 +17,11 @@ return (
         {users.length > 0 ? (
             <ul>
                 {users
-                    .filter((user) => user.uid !== userData.uid)
+                    .filter((user) => user.uid !== userData?.uid)
                     .map((user) => (
                         <div key={user.uid}>
                             <li>{user.handle}</li>
-                            {userData.friends && userData.friends.includes(user.handle) ? (
+                            {userData?.friends && userData.friends.includes(user.handle) ? (
                                 <p>Already friends</p>
                             ) : (
                                 <button onClick={() => addFriendRequestToUser(user.handle, userData.handle)}>Send Friend Request</button>
