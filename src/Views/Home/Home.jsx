@@ -19,12 +19,17 @@ return (
                 {users
                     .filter((user) => user.uid !== userData?.uid)
                     .map((user) => (
-                        <div key={user.uid}>
-                            <li>{user.handle}</li>
-                            {userData?.friends && userData.friends.includes(user.handle) ? (
-                                <p>Already friends</p>
-                            ) : (
-                                <button onClick={() => addFriendRequestToUser(user.handle, userData.handle)}>Send Friend Request</button>
+                        <div key={user.uid} className="flex items-center space-x-10">
+                <li>{user.handle}</li>
+                {userData?.friends && userData.friends.includes(user.handle) ? (
+                  <p>Already friends</p>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => addFriendRequestToUser(user.handle, userData.handle)}
+                  >
+                    Send Friend Request
+                  </button>
                             )}
                             
                         </div>
