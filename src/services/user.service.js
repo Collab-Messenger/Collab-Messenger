@@ -107,6 +107,30 @@ export const addFriendRequestToUser = async (handle, senderHandle) => {
     await update(userRef, { friendRequests });
   };
 
+export const acceptFriendRequest = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const senderRef = ref(db, `users/${senderHandle}`);
+
+    const userSnapshot = await get(userRef);
+    const senderSnapshot = await get(senderRef);
+
+    if (userSnapshot.exists() && senderSnapshot.exists()) {
+        const user = userSnapshot.val();
+        const sender = senderSnapshot.val();
+
+        const friendRequests = user.friendRequests || [];
+        const userFriends = user.friends || [];
+        const senderFriends = sender.friends || [];
+
+        const updatedFriendRequests = friendRequests.filter(request => request !== senderHandle);
+
+        userFriends.push(senderHandle);
+        senderFriends.push(handle);
+
+        await update(userRef, { friendRequests: updatedFriendRequests, friends: userFriends });
+        await update(senderRef, { friends: senderFriends });
+    }
+};
   
 
 /**
