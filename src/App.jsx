@@ -17,7 +17,7 @@ import AllUsers from './components/AllUsers/AllUsers'
 import { Notifications } from './Views/Notifications/Notifications'
 import Home from './Views/Home/Home'
 import CreateChatRoom from './components/ChatRoom/chat-room'
-import Friends from './Views/Friends/Friends'
+import { Friends } from './Views/Friends/Friends'
 
 function App() {
     const [appState, setAppState] = useState({
