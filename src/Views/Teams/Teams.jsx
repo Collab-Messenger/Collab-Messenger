@@ -1,61 +1,49 @@
-import { useState, useContext } from "react";
-import { addTeam, isTeamNameUnique } from "../../services/teams.service.js";
-import { AppContext } from "../../Store/app-context.js";
+// FILE: Teams.jsx
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTeams } from '../../services/teams.service.js';
+import { AppContext } from '../../store/app-context.js';
 
-export function Teams() {
+export const Teams = () => {
   const { user } = useContext(AppContext);
-  const [team, setTeam] = useState({
-    id: '',
-    name: '',
-    members: '',
-    owner: user ? user.uid : null,
-    channels: []
-  });
+  const [teams, setTeams] = useState([]);
+  const navigate = useNavigate();
 
-  const createTeam = async () => {
-    if (team.name.length < 3 || team.name.length > 40) {
-       alert('Team name must be between 3 and 40 characters.');
-       return;
-        
-    }
+  useEffect(() => {
+    const fetchTeams = async () => {
+      if (user) {
+        const teamsData = await getTeams(user.uid);
+        setTeams(teamsData || []);
+      }
+    };
+    fetchTeams();
+  }, [user]);
 
-    const isUnique = await isTeamNameUnique(team.name);
-    if (!isUnique) {
-      alert('Team name must be unique.');
-      return;
-      
-    }
-
-    try {
-      const newTeam = {
-        name: team.name,
-        members: [user.uid],
-        owner: user.uid,
-        channels: team.channels
-      };
-      const teamId = await addTeam(newTeam);
-      setTeam((prevTeam) => ({
-        ...prevTeam,
-        id: teamId,
-        name: '',
-      }));
-      alert("Team created successfully!");
-      return;
-    } catch (error) {
-      console.log(error.message);
-    }
+  const handleCreateTeam = () => {
+    navigate('/createTeam');
   };
+
+  const handleViewTeam = (teamId) => {
+    navigate(`/teams/${teamId}`);
+  };
+
+  if (!user) {
+    return <div>Please log in to view your teams.</div>;
+  }
 
   return (
     <div>
-      <h1>Create a Team</h1>
-      <input
-        type="text"
-        placeholder="Team Name"
-        value={team.name}
-        onChange={(e) => setTeam({ ...team, name: e.target.value })}
-      />
-      <button onClick={createTeam}>Create Team</button>
+      <h1>Teams</h1>
+      {teams.length === 0 ? (
+        <div>You are not a member of any teams.</div>
+      ) : (
+        <div>
+          {teams.map(team => (
+            <div key={team.id} onClick={() => handleViewTeam(team.id)}>{team.name}</div>
+          ))}
+        </div>
+      )}
+      <button onClick={handleCreateTeam}>Create New Team</button>
     </div>
   );
-}
+};
