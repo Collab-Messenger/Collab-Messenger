@@ -134,6 +134,28 @@ export const acceptFriendRequest = async (handle, senderHandle) => {
     }
 };
 
+//export const removeFriend = async (handle, friendHandle) => {
+//    const userRef = ref(db, `users/${handle}`);
+//    const friendRef = ref(db, `users/${friendHandle}`);
+
+//    const userSnapshot = await get(userRef);
+//    const friendSnapshot = await get(friendRef);
+
+//    if (userSnapshot.exists() && friendSnapshot.exists()) {
+//        const user = userSnapshot.val();
+//        const friendData = friendSnapshot.val();
+
+//        const userFriends = user.friends || [];
+//        const friendFriends = friendData.friends || [];
+
+//        const updatedUserFriends = userFriends.filter(friend => friend !== friendHandle);
+//        const updatedFriendFriends = friendFriends.filter(friend => friend !== handle);
+
+//        await update(userRef, { friends: updatedUserFriends });
+//        await update(friendRef, { friends: updatedFriendFriends });
+//    }
+//};
+
 export const declineFriendRequest = async (handle, senderHandle) => {
     const userRef = ref(db, `users/${handle}`);
     const userSnapshot = await get(userRef);
@@ -245,7 +267,7 @@ export const searchUsers = async (searchTerm) => {
     const usersSnapshot = await get(usersRef);
     const users = usersSnapshot.val();
     const usersArray = Object.keys(users).map(key => users[key]);
-    return usersArray.filter(user => user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
+    return usersArray.filter(user => user.handle && user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
   };
 
 /**

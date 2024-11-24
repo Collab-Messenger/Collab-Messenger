@@ -10,10 +10,14 @@ export const Notifications = () => {
       {userData?.friendRequests && userData.friendRequests.length > 0 ? (
         <ul>
           {userData.friendRequests.map((friendRequest, index) => (
-            <div key={index}>
+            <div key={index} className="flex items-center space-x-10">
               <li>{friendRequest}</li>
-              <button onClick={() => acceptFriendRequest(userData.handle, friendRequest)}>Accept</button>
-              <button onClick={() => declineFriendRequest(userData.handle, friendRequest)}>Decline</button>
+              <button
+              className="btn btn-primary" 
+              onClick={() => acceptFriendRequest(userData.handle, friendRequest)}>Accept</button>
+              <button 
+              className="btn btn-primary"
+              onClick={() => declineFriendRequest(userData.handle, friendRequest)}>Decline</button>
             </div>
           ))}
         </ul>

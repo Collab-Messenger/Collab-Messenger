@@ -9,16 +9,17 @@ import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.s
 
 
 const Header = () => {
-    const [menuOpen, setMenuOpen] = useState(false);
+    const navigate = useNavigate();
     const { userData, setAppState } = useContext(AppContext);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
 
     };
 
-    const userStatusOnline = setUserOnlineStatus(userData?.handle);
-    const userStatusOffline = setUserOfflineStatus(userData?.handle);
+    const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
+    const userStatusOffline = () => setUserOfflineStatus(userData?.handle);
 
     const getUserInitials = (userData) => {
         if (userData.firstName) {
@@ -33,14 +34,18 @@ const Header = () => {
         return "User";
     };
 
-    const handleLogout = () => {
-        auth.signOut().then(() => {
-            setAppState({
-                userForm: null,
-                userData: null
-            });
-        });
-    };
+    const handleLogout = async () => {
+        try {
+          await auth.signOut();
+          setAppState({
+            userForm: null,
+            userData: null
+          });
+          navigate('/login');
+        } catch (error) {
+          console.error("Error logging out:", error);
+        }
+      };
 
     return (
         <header className="flex items-center justify-between bg-gray-800 text-white p-4">
@@ -61,9 +66,7 @@ const Header = () => {
 
             <div className="relative">
                 <button
-                    onClick={toggleMenu}
-
-                >
+                    onClick={toggleMenu}>
                     {userData?.isOnline ? (
                         <div className="avatar online placeholder">
                         <div className="bg-neutral text-neutral-content w-16 rounded-full">
@@ -84,8 +87,8 @@ const Header = () => {
                     <ul className="menu bg-base-200 w-56 absolute top-full mt-2 right-0 shadow-lg rounded-lg">
                         {userData? (
                             <>
-                                <NavLink to='profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
-                                <NavLink to='friends'><li><a href="#item2">Friends</a></li></NavLink>
+                                <NavLink to='/profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
+                                <NavLink to='/friends'><li><a href="#item2">Friends</a></li></NavLink>
                             </>
                         ) : (
                             <>
@@ -94,7 +97,6 @@ const Header = () => {
                             </>
                         )}
 
-                        
                         {userData && (
                             <>
                                 {userData?.isOnline ? (
@@ -108,10 +110,8 @@ const Header = () => {
                             <NavLink to='/admin'><li><a href="#item4">Admin Panel</a></li></NavLink>
                         )}
                         {userData && (
-                            <NavLink to='/'><li><a href="#item5" onClick={handleLogout}>Logout</a></li></NavLink>
+                            <li><a href="#item5" onClick={handleLogout}>Logout</a></li>
                         )}
-
-
                     </ul>
                 )}
                 <div className="indicator">
