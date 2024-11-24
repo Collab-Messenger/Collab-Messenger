@@ -34,7 +34,6 @@ export const Teams = () => {
   return (
     <div>
       <h1>Teams</h1>
-      <button onClick={handleCreateTeam}>Create New Team</button>
       {teams.length === 0 ? (
         <div>You are not a member of any teams.</div>
       ) : (
@@ -44,6 +43,7 @@ export const Teams = () => {
           ))}
         </div>
       )}
+      <button onClick={handleCreateTeam}>Create New Team</button>
     </div>
   );
 };
