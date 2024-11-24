@@ -263,3 +263,28 @@ export const setUserOfflineStatus = async (handle) => {
     const userRef = ref(db, `users/${handle}`);
     await update(userRef, { isOnline: false });
   }
+  export const getFriends = async (userId) => {
+    try {
+      const userRef = ref(db, `users/${userId}`);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        if (userData.friends) {
+          const friendsPromises = userData.friends.map(async (friendId) => {
+            const friendRef = ref(db, `users/${friendId}`);
+            const friendSnapshot = await get(friendRef);
+            if (friendSnapshot.exists()) {
+              return { id: friendId, ...friendSnapshot.val() };
+            }
+            return null;
+          });
+          const friends = await Promise.all(friendsPromises);
+          return friends.filter(friend => friend !== null);
+        }
+      }
+      return [];
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  };

@@ -7,14 +7,13 @@ import { AppContext } from '../../store/app-context.js';
 export const Teams = () => {
   const { user } = useContext(AppContext);
   const [teams, setTeams] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeams = async () => {
       if (user) {
         const teamsData = await getTeams(user.uid);
-        setTeams(teamsData);
+        setTeams(teamsData || []);
       }
     };
     fetchTeams();
@@ -28,14 +27,6 @@ export const Teams = () => {
     navigate(`/teams/${teamId}`);
   };
 
-  const handleSearchFriends = () => {
-    const query = prompt("Enter friend's name to search:");
-    if (query) {
-      // Mock search results
-      setSearchResults([{ id: 1, name: query }]);
-    }
-  };
-
   if (!user) {
     return <div>Please log in to view your teams.</div>;
   }
@@ -44,8 +35,7 @@ export const Teams = () => {
     <div>
       <h1>Teams</h1>
       <button onClick={handleCreateTeam}>Create New Team</button>
-      <button onClick={handleSearchFriends}>Search Friends</button>
-      {teams && teams.length === 0 ? (
+      {teams.length === 0 ? (
         <div>You are not a member of any teams.</div>
       ) : (
         <div>
@@ -54,12 +44,6 @@ export const Teams = () => {
           ))}
         </div>
       )}
-      <div>
-        <h2>Search Results</h2>
-        {searchResults.map(friend => (
-          <div key={friend.id}>{friend.name}</div>
-        ))}
-      </div>
     </div>
   );
 };
