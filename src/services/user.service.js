@@ -247,3 +247,19 @@ export const searchUsers = async (searchTerm) => {
     const usersArray = Object.keys(users).map(key => users[key]);
     return usersArray.filter(user => user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
   };
+
+/**
+ * Sets the user's online status.
+ * @param {string} handle - The handle of the user.
+ * @param {boolean} isOnline - The online status of the user.
+ * @returns {Promise<void>}
+ */
+export const setUserOnlineStatus = async (handle) => {
+    const userRef = ref(db, `users/${handle}`);
+    await update(userRef, { isOnline: true });
+  };
+
+export const setUserOfflineStatus = async (handle) => {
+    const userRef = ref(db, `users/${handle}`);
+    await update(userRef, { isOnline: false });
+  }

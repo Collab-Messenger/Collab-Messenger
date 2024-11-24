@@ -5,17 +5,20 @@ import { useContext } from 'react';
 import { Search } from '../Search/Search';
 import { PiDiscordLogoBold } from "react-icons/pi";
 import { auth } from '../../config/firebase-config';
+import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.service';
 
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { userData, setAppState } = useContext(AppContext);
-    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
 
     };
+
+    const userStatusOnline = setUserOnlineStatus(userData?.handle);
+    const userStatusOffline = setUserOfflineStatus(userData?.handle);
 
     const getUserInitials = (userData) => {
         if (userData.firstName) {
@@ -61,11 +64,20 @@ const Header = () => {
                     onClick={toggleMenu}
 
                 >
-                    <div className="avatar online placeholder">
+                    {userData?.isOnline ? (
+                        <div className="avatar online placeholder">
                         <div className="bg-neutral text-neutral-content w-16 rounded-full">
                             <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
                         </div>
                     </div>
+                    ): (
+                        <div className="avatar offline placeholder">
+                        <div className="bg-neutral text-neutral-content w-16 rounded-full">
+                            <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
+                        </div>
+                    </div>
+                    )}
+                    
                 </button>
 
                 {menuOpen && (
@@ -84,13 +96,19 @@ const Header = () => {
 
                         
                         {userData && (
-                            <li><a href="#item3">Set Status</a></li>
+                            <>
+                                {userData?.isOnline ? (
+                                    <li><a href="#item3" onClick={userStatusOffline}>Set Status - Offline</a></li>
+                                ) : (
+                                    <li><a href="#item3" onClick={userStatusOnline}>Set Status - Online</a></li>
+                                )}
+                            </>
                         )}
                         {userData && userData.isAdmin && (
                             <NavLink to='/admin'><li><a href="#item4">Admin Panel</a></li></NavLink>
                         )}
                         {userData && (
-                            <NavLink to='/'><li><a href="#item3" onClick={handleLogout}>Logout</a></li></NavLink>
+                            <NavLink to='/'><li><a href="#item5" onClick={handleLogout}>Logout</a></li></NavLink>
                         )}
 
 
