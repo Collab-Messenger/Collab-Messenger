@@ -18,6 +18,7 @@ import { Notifications } from './Views/Notifications/Notifications'
 import Home from './Views/Home/Home'
 import CreateChatRoom from './components/ChatRoom/chat-room'
 import { Friends } from './Views/Friends/Friends'
+import { Admin } from './Views/Admin/Admin'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -58,6 +59,7 @@ function App() {
                                 <Route path="/teams" element={<Teams />} />
                                 <Route path="/users" element={<></>}/>
                                 <Route path='/friends' element={<Friends/>}/>
+                                <Route path='/admin' element={<Admin/>}/>
                                 <Route path='/notifications' element={<Notifications/>}/>
                                 <Route path='/createChatRoom' element={<CreateChatRoom/>}/>
                             </Routes>

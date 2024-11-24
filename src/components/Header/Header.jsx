@@ -87,7 +87,7 @@ const Header = () => {
                             <li><a href="#item3">Set Status</a></li>
                         )}
                         {userData && userData.isAdmin && (
-                            <li><a href="#item4">Admin Panel</a></li>
+                            <NavLink to='/admin'><li><a href="#item4">Admin Panel</a></li></NavLink>
                         )}
                         {userData && (
                             <NavLink to='/'><li><a href="#item3" onClick={handleLogout}>Logout</a></li></NavLink>

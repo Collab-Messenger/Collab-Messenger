@@ -74,14 +74,16 @@ export const updateUser = async (handle, userData) => {
  * @returns {Function} - The unsubscribe function.
  */
 export const getAllUsers = (callback) => {
-  const usersRef = ref(db, 'users');
-  const unsubscribe = onValue(usersRef, (snapshot) => {
-    const users = snapshot.val();
-    const usersArray = Object.keys(users).map(key => users[key]);
-    callback(usersArray);
-  });
-  return unsubscribe;
-};
+    const db = getDatabase();
+    const usersRef = ref(db, 'users');
+    onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        callback(Object.values(snapshot.val()));
+      } else {
+        callback([]);
+      }
+    });
+  };
 
 /**
  * Adds a post to a user.
