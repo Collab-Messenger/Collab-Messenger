@@ -2,9 +2,11 @@
 import { useState, useContext } from "react";
 import { addTeam, isTeamNameUnique } from "../../services/teams.service.js";
 import { AppContext } from "../../store/app-context.js";
+import { useNavigate } from "react-router-dom";
 
 export function TeamsCreate() {
   const { user } = useContext(AppContext);
+  const navigate = useNavigate();
   const [team, setTeam] = useState({
     id: '',
     name: '',
@@ -38,7 +40,7 @@ export function TeamsCreate() {
         id: teamId,
         name: '',
       }));
-      alert("Team created successfully!");
+      navigate('/teams');
       return;
     } catch (error) {
       console.log(error.message);
