@@ -12,7 +12,7 @@ export function Home() {
 
   return (
     <div className={styles.homepageContainer}>
-      <h1 className={styles.header}>Welcome to the Next-Discord App!</h1>
+      <h1 className={styles.header}>Welcome to the LinkUp App!</h1>
       {users.length > 0 ? (
         <ul>
           {users
