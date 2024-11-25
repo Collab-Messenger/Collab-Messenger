@@ -1,22 +1,32 @@
-// FILE: TeamDetails.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTeamById, removeMemberFromTeam, addMemberToTeam } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
-import { getFriends } from '../../services/user.service';
+import { getUserByUid } from '../../services/user.service.js';  // Import the getUserByUid function
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
   const { teamId } = useParams();
   const [team, setTeam] = useState(null);
-  const [friends, setFriends] = useState([]);
-  const [showFriends, setShowFriends] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [showMembers, setShowMembers] = useState(false);
 
   useEffect(() => {
     const fetchTeam = async () => {
+      // Fetch the team data using the teamId
       const teamData = await getTeamById(teamId);
       setTeam(teamData);
+
+      // Fetch members' details by their UID
+      const membersData = await Promise.all(
+        teamData.members.map(async (uid) => {
+          const userData = await getUserByUid(uid);  // Use the getUserByUid function to get user data
+          return userData ? userData.handle : null;  // Collect the user's handle
+        })
+      );
+      setMembers(membersData);  // Set the members' handles
     };
+
     fetchTeam();
   }, [teamId]);
 
@@ -30,11 +40,8 @@ export const TeamDetails = () => {
     setTeam(updatedTeam);
   };
 
-  const handleShowFriends = async () => {
-    const friendsData = await getFriends(user.uid);
-    const nonMembers = friendsData.filter(friend => !team.members.some(member => member.id === friend.id));
-    setFriends(nonMembers);
-    setShowFriends(true);
+  const handleShowMembers = () => {
+    setShowMembers(!showMembers);
   };
 
   if (!team) {
@@ -44,6 +51,20 @@ export const TeamDetails = () => {
   return (
     <div>
       <h1>Team: {team.name}</h1>
+      <button onClick={handleShowMembers}>
+        {showMembers ? 'Hide Members' : 'Show Members'}
+      </button>
+
+      {showMembers && (
+        <div>
+          <h2>Members:</h2>
+          <ul>
+            {members.map((handle, index) => (
+              <li key={index}>{handle}</li>  // Display the member's handle
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

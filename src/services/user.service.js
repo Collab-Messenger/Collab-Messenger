@@ -311,3 +311,29 @@ export const setUserOfflineStatus = async (handle) => {
       return [];
     }
   };
+
+  export const getUserByUid = async (uid) => {
+    try {
+      const usersRef = ref(db, 'users');  // Get the 'users' node
+      const usersSnapshot = await get(usersRef);
+  
+      if (usersSnapshot.exists()) {
+        const users = usersSnapshot.val();
+        // Find the user with matching UID
+        for (let handle in users) {
+          const user = users[handle];
+          if (user.uid === uid) {
+            return user;  // Return the user data if UID matches
+          }
+        }
+        console.error(`User not found for UID: ${uid}`);
+        return null;
+      } else {
+        console.error('No users found.');
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  };
