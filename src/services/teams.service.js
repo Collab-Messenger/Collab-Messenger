@@ -4,12 +4,24 @@ import { db } from "../config/firebase-config";
 
 export const addTeam = async (team) => {
   try {
+    // Ensure no undefined values
+    const validateTeamData = (team) => {
+      const cleanTeam = { ...team };
+      Object.keys(cleanTeam).forEach((key) => {
+        if (cleanTeam[key] === undefined) {
+          cleanTeam[key] = null; // Replace undefined with null
+        }
+      });
+      return cleanTeam;
+    };
+
     const newTeamRef = push(ref(db, 'teams'));
-    await set(newTeamRef, team);
+    const teamData = validateTeamData(team); // Validate team data
+    await set(newTeamRef, teamData);
     return newTeamRef.key;
   } catch (error) {
     console.log(error.message);
- 
+    throw error; // Re-throw the error for further handling if needed
   }
 };
 
@@ -28,20 +40,37 @@ export const isTeamNameUnique = async (name) => {
   }
 };
 
-export const getTeams = async (userId) => {
-    try {
-      const teamsRef = ref(db, 'teams');
-      const snapshot = await get(teamsRef);
-      if (snapshot.exists()) {
-        return Object.entries(snapshot.val())
-          .map(([id, team]) => ({ id, ...team }))
-          .filter(team => team.members && team.members.includes(userId));
-      }
+
+export const getTeams = async (userHandle) => {
+  try {
+    const snapshot = await get(ref(db, 'teams'));
+    if (!snapshot.exists()) {
       return [];
-    } catch (error) {
-      console.log(error.message);
     }
-  };
+
+    const allTeams = snapshot.val();
+    const userTeams = [];
+
+    for (const [teamId, teamData] of Object.entries(allTeams)) {
+      // Safeguard against missing or malformed data
+      const members = Array.isArray(teamData.members) ? teamData.members : [];
+      const owner = teamData.owner || '';
+
+      // Check if the user is either the owner or in the members list
+      if (owner === userHandle || members.includes(userHandle)) {
+        userTeams.push({ id: teamId, ...teamData });
+      }
+    }
+
+    console.log("Fetched Teams:", userTeams); // Debugging fetched teams
+    return userTeams;
+  } catch (error) {
+    console.error("Error fetching teams:", error);
+    return [];
+  }
+};
+
+
 
 export const getTeamById = async (teamId) => {
     try {
