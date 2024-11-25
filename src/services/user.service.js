@@ -134,27 +134,28 @@ export const acceptFriendRequest = async (handle, senderHandle) => {
     }
 };
 
-//export const removeFriend = async (handle, friendHandle) => {
-//    const userRef = ref(db, `users/${handle}`);
-//    const friendRef = ref(db, `users/${friendHandle}`);
 
-//    const userSnapshot = await get(userRef);
-//    const friendSnapshot = await get(friendRef);
+export const removeFriend = async (handle, friendHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const friendRef = ref(db, `users/${friendHandle}`);
 
-//    if (userSnapshot.exists() && friendSnapshot.exists()) {
-//        const user = userSnapshot.val();
-//        const friendData = friendSnapshot.val();
+    const userSnapshot = await get(userRef);
+    const friendSnapshot = await get(friendRef);
 
-//        const userFriends = user.friends || [];
-//        const friendFriends = friendData.friends || [];
+    if (userSnapshot.exists() && friendSnapshot.exists()) {
+        const user = userSnapshot.val();
+        const friendData = friendSnapshot.val();
 
-//        const updatedUserFriends = userFriends.filter(friend => friend !== friendHandle);
-//        const updatedFriendFriends = friendFriends.filter(friend => friend !== handle);
+        const userFriends = user.friends || [];
+        const friendFriends = friendData.friends || [];
 
-//        await update(userRef, { friends: updatedUserFriends });
-//        await update(friendRef, { friends: updatedFriendFriends });
-//    }
-//};
+        const updatedUserFriends = userFriends.filter(friend => friend !== friendHandle);
+        const updatedFriendFriends = friendFriends.filter(friend => friend !== handle);
+
+        await update(userRef, { friends: updatedUserFriends });
+        await update(friendRef, { friends: updatedFriendFriends });
+    }
+};
 
 export const declineFriendRequest = async (handle, senderHandle) => {
     const userRef = ref(db, `users/${handle}`);

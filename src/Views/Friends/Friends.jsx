@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { AppContext } from "../../store/app-context";
+import { removeFriend } from "../../services/user.service";
 //import { removeFriend } from "../../services/user.service";
 
 export const Friends = () => {
@@ -19,9 +20,9 @@ export const Friends = () => {
                         <button
                         className="btn btn-primary">Message</button>
                         <button
-                        className="btn btn-primary"
-                        //onClick={removeFriend(userData.handle, friend)}
-                        >Remove as a friend</button>
+                    className="btn btn-primary"
+                    onClick={() => removeFriend(userData.handle, friend)}
+                  >Remove as a friend</button>
                     </div>
                 ))}
                 
