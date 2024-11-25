@@ -37,6 +37,7 @@ const Header = () => {
     const handleLogout = async () => {
         try {
           await auth.signOut();
+          await userStatusOffline();
           setAppState({
             userForm: null,
             userData: null
