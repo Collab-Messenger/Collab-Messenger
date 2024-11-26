@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam } from '../../services/teams.service.js';
+import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam, changeOwner } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
 
@@ -105,6 +105,16 @@ export const TeamDetails = () => {
     }
   };
 
+  const handleChangeOwner = async (newOwnerHandle) => {
+    if (!isOwner) return;
+    try {
+      const updatedTeam = await changeOwner(teamId, newOwnerHandle);
+      setTeam(updatedTeam);
+    } catch (error) {
+      console.error('Error changing owner:', error);
+    }
+  };
+
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
@@ -128,6 +138,12 @@ export const TeamDetails = () => {
 
                 {isOwner && handle !== userHandle && (
                   <button onClick={() => handleKickMember(handle)}>Kick</button>
+                )}
+
+                {isOwner && handle !== userHandle && (
+                  <button onClick={() => handleChangeOwner(handle)}>
+                    Change Owner
+                  </button>
                 )}
               </div>
             ))}

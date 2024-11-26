@@ -161,5 +161,23 @@ export const getTeamById = async (teamId) => {
     return { ...teamData, members: updatedMembers };
   };
   
-  // Add any other necessary functions like addMemberToTeam or removeMemberFromTeam
+
+export const changeOwner = async (teamId, newOwnerHandle) => {
+  const teamRef = ref(db, `teams/${teamId}`);
+  const teamSnapshot = await get(teamRef);
+
+  if (!teamSnapshot.exists()) {
+    throw new Error('Team not found');
+  }
+
+  const teamData = teamSnapshot.val();
   
+  if (!teamData.members.includes(newOwnerHandle)) {
+    throw new Error('New owner must be a member of the team');
+  }
+
+  await update(teamRef, { owner: newOwnerHandle });
+
+  return { ...teamData, owner: newOwnerHandle };
+};
+
