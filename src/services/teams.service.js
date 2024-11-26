@@ -4,24 +4,23 @@ import { db } from "../config/firebase-config";
 
 export const addTeam = async (team) => {
   try {
-    // Ensure no undefined values
     const validateTeamData = (team) => {
       const cleanTeam = { ...team };
       Object.keys(cleanTeam).forEach((key) => {
         if (cleanTeam[key] === undefined) {
-          cleanTeam[key] = null; // Replace undefined with null
+          cleanTeam[key] = null;
         }
       });
       return cleanTeam;
     };
 
     const newTeamRef = push(ref(db, 'teams'));
-    const teamData = validateTeamData(team); // Validate team data
+    const teamData = validateTeamData(team);
     await set(newTeamRef, teamData);
     return newTeamRef.key;
   } catch (error) {
     console.log(error.message);
-    throw error; // Re-throw the error for further handling if needed
+    throw error;
   }
 };
 
@@ -52,17 +51,14 @@ export const getTeams = async (userHandle) => {
     const userTeams = [];
 
     for (const [teamId, teamData] of Object.entries(allTeams)) {
-      // Safeguard against missing or malformed data
       const members = Array.isArray(teamData.members) ? teamData.members : [];
       const owner = teamData.owner || '';
-
-      // Check if the user is either the owner or in the members list
       if (owner === userHandle || members.includes(userHandle)) {
         userTeams.push({ id: teamId, ...teamData });
       }
     }
 
-    console.log("Fetched Teams:", userTeams); // Debugging fetched teams
+    console.log("Fetched Teams:", userTeams);
     return userTeams;
   } catch (error) {
     console.error("Error fetching teams:", error);
@@ -122,24 +118,16 @@ export const getTeamById = async (teamId) => {
   
   export const removeMemberFromTeam = async (teamId, memberHandle) => {
     const teamRef = ref(db, `teams/${teamId}`);
-  
-    // Fetch the current team data
     const teamSnapshot = await get(teamRef);
     if (!teamSnapshot.exists()) {
       throw new Error('Team not found');
     }
   
     const teamData = teamSnapshot.val();
-  
-    // Remove the member from the members array
     const updatedMembers = teamData.members.filter(
       (handle) => handle !== memberHandle
     );
-  
-    // Update the team in Firebase
     await update(teamRef, { members: updatedMembers });
-  
-    // Return the updated team data
     return { ...teamData, members: updatedMembers };
   };
   

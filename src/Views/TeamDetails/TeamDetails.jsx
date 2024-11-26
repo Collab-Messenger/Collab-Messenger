@@ -1,29 +1,44 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
-import {
-  getTeamById,
-  removeMemberFromTeam,
-  addMemberToTeam,
-} from '../../services/teams.service.js';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getTeamById, removeMemberFromTeam, addMemberToTeam } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
-import { getAllUsers } from '../../services/user.service.js'; // Fetch all users with their handles
+import { getAllUsers, getUserByUid } from '../../services/user.service.js';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
   const { teamId } = useParams();
+  const navigate = useNavigate();
   const [team, setTeam] = useState(null);
   const [members, setMembers] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
+  const [userHandle, setUserHandle] = useState(null);
+
+  useEffect(() => {
+    if (!user || !user.uid) {
+      navigate('/login');
+      return;
+    }
+
+    const fetchUserHandle = async () => {
+      try {
+        const userData = await getUserByUid(user.uid);
+        setUserHandle(userData.handle);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserHandle();
+  }, [user, navigate]);
 
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        // Fetch the team data by ID
         const teamData = await getTeamById(teamId);
         setTeam(teamData);
-        setMembers(teamData.members); // Use handles directly from the `members` array
+        setMembers(teamData.members);
       } catch (error) {
         console.error('Error fetching team:', error);
       }
@@ -32,14 +47,12 @@ export const TeamDetails = () => {
     fetchTeam();
   }, [teamId]);
 
+  const isOwner = team?.owner === userHandle;
+
   const handleKickMember = async (memberHandle) => {
-    console.log('Attempting to kick member:', memberHandle);
-  
+    if (!isOwner) return;
     try {
       const updatedTeam = await removeMemberFromTeam(teamId, memberHandle);
-      console.log('Updated team from Firebase:', updatedTeam);
-  
-      // Update local states
       setTeam(updatedTeam);
       setMembers((prevMembers) =>
         prevMembers.filter((handle) => handle !== memberHandle)
@@ -50,28 +63,28 @@ export const TeamDetails = () => {
   };
 
   const handleAddMember = async (userHandle) => {
+    if (!isOwner) return;
     try {
       const updatedTeam = await addMemberToTeam(teamId, userHandle);
       setTeam(updatedTeam);
-  
-      // Optimistically update the members list
       setMembers((prevMembers) => [...prevMembers, userHandle]);
-  
-      // Remove the added user from the "allUsers" list
-      setAllUsers((prevUsers) => prevUsers.filter((user) => user.handle !== userHandle));
+      setAllUsers((prevUsers) =>
+        prevUsers.filter((user) => user.handle !== userHandle)
+      );
     } catch (error) {
       console.error('Error adding member:', error);
     }
   };
+
   const handleShowMembers = () => {
     setShowMembers((prev) => !prev);
   };
 
   const handleShowUsers = async () => {
+    if (!isOwner) return;
     if (!showUsers) {
       try {
         const usersData = await getAllUsers();
-        // Filter out users already in the team
         const nonMembers = usersData.filter(
           (user) => !team.members.includes(user.handle)
         );
@@ -83,15 +96,15 @@ export const TeamDetails = () => {
     setShowUsers((prev) => !prev);
   };
 
-  if (!team) {
+  if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
 
   return (
     <div>
       <h1>Team: {team.name}</h1>
+      <h2>{isOwner ? 'You are the owner' : `Owner: ${team.owner}`}</h2>
 
-      {/* Show/Hide Team Members */}
       <button onClick={handleShowMembers}>
         {showMembers ? 'Hide Members' : 'Show Members'}
       </button>
@@ -103,7 +116,8 @@ export const TeamDetails = () => {
             {members.map((handle, index) => (
               <div key={`member-${handle}-${index}`} style={{ marginBottom: '10px' }}>
                 {handle}
-                {handle !== user.handle && (
+                
+                {isOwner && handle !== userHandle && (
                   <button onClick={() => handleKickMember(handle)}>Kick</button>
                 )}
               </div>
@@ -112,23 +126,27 @@ export const TeamDetails = () => {
         </div>
       )}
 
-      {/* Show/Hide All Users */}
-      <button onClick={handleShowUsers}>
-        {showUsers ? 'Hide All Users' : 'Show All Users'}
-      </button>
+     
+      {isOwner && (
+        <>
+          <button onClick={handleShowUsers}>
+            {showUsers ? 'Hide All Users' : 'Show All Users'}
+          </button>
 
-      {showUsers && (
-        <div>
-          <h2>All Users:</h2>
-          <div>
-            {allUsers.map((user, index) => (
-              <div key={`user-${user.handle}-${index}`} style={{ marginBottom: '10px' }}>
-                {user.handle}
-                <button onClick={() => handleAddMember(user.handle)}>Add to Team</button>
+          {showUsers && (
+            <div>
+              <h2>All Users:</h2>
+              <div>
+                {allUsers.map((user, index) => (
+                  <div key={`user-${user.handle}-${index}`} style={{ marginBottom: '10px' }}>
+                    {user.handle}
+                    <button onClick={() => handleAddMember(user.handle)}>Add to Team</button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

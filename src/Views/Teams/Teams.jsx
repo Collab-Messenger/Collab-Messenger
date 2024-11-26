@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTeams } from '../../services/teams.service.js';
-import { getUserByUid } from '../../services/user.service.js'; // Import function to fetch user details
+import { getUserByUid } from '../../services/user.service.js'; 
 import { AppContext } from '../../store/app-context.js';
 
 export const Teams = () => {
@@ -13,14 +13,14 @@ export const Teams = () => {
   useEffect(() => {
     const fetchUserAndTeams = async () => {
       if (user) {
-        // Fetch the user's handle using their UID
+       
         const userData = await getUserByUid(user.uid);
         if (userData && userData.handle) {
           setUserHandle(userData.handle);
 
-          // Fetch teams using the user's handle
+          
           const teamsData = await getTeams(userData.handle);
-          console.log("Fetched Teams:", teamsData); // Debug fetched teams
+          console.log("Fetched Teams:", teamsData); 
           setTeams(teamsData || []);
         } else {
           console.error("User handle is missing or undefined.");

@@ -347,7 +347,7 @@ export const getAllUsers = async () => {
       const usersData = snapshot.val();
       return Object.keys(usersData).map((key) => ({
         ...usersData[key],
-        uid: key, // Include UID for filtering
+        uid: key, 
       }));
     }
     return [];
