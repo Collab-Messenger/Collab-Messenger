@@ -1,22 +1,33 @@
-// FILE: Teams.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTeams } from '../../services/teams.service.js';
+import { getUserByUid } from '../../services/user.service.js'; 
 import { AppContext } from '../../store/app-context.js';
 
 export const Teams = () => {
   const { user } = useContext(AppContext);
   const [teams, setTeams] = useState([]);
+  const [userHandle, setUserHandle] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchUserAndTeams = async () => {
       if (user) {
-        const teamsData = await getTeams(user.uid);
-        setTeams(teamsData || []);
+       
+        const userData = await getUserByUid(user.uid);
+        if (userData && userData.handle) {
+          setUserHandle(userData.handle);
+
+          
+          const teamsData = await getTeams(userData.handle);
+          console.log("Fetched Teams:", teamsData); 
+          setTeams(teamsData || []);
+        } else {
+          console.error("User handle is missing or undefined.");
+        }
       }
     };
-    fetchTeams();
+    fetchUserAndTeams();
   }, [user]);
 
   const handleCreateTeam = () => {

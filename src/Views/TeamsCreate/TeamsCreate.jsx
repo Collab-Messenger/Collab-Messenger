@@ -1,8 +1,8 @@
-// FILE: TeamsCreate.jsx
 import { useState, useContext } from "react";
 import { addTeam, isTeamNameUnique } from "../../services/teams.service.js";
 import { AppContext } from "../../store/app-context.js";
 import { useNavigate } from "react-router-dom";
+import { getUserByUid } from "../../services/user.service.js";
 
 export function TeamsCreate() {
   const { user } = useContext(AppContext);
@@ -11,7 +11,7 @@ export function TeamsCreate() {
     id: '',
     name: '',
     members: '',
-    owner: user ? user.uid : null,
+    owner: null,
     channels: []
   });
 
@@ -28,12 +28,20 @@ export function TeamsCreate() {
     }
 
     try {
+      const userHandle = user?.handle || (await getUserByUid(user.uid)).handle;
+
+      if (!userHandle) {
+        alert("Unable to retrieve your user handle. Please log in again.");
+        return;
+      }
+
       const newTeam = {
         name: team.name,
-        members: [user.uid],
-        owner: user.uid,
+        members: [userHandle],
+        owner: userHandle,
         channels: team.channels
       };
+
       const teamId = await addTeam(newTeam);
       setTeam((prevTeam) => ({
         ...prevTeam,
@@ -43,7 +51,7 @@ export function TeamsCreate() {
       navigate('/teams');
       return;
     } catch (error) {
-      console.log(error.message);
+      console.error("Error creating team:", error.message);
     }
   };
 

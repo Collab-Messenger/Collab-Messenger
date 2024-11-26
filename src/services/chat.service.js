@@ -1,5 +1,6 @@
 import { ref, set, push, get, query, orderByChild, equalTo } from "firebase/database";
 import { db } from "../config/firebase-config";
+import { onValue } from "firebase/database";
 
 //Implement UserID
 
@@ -80,4 +81,60 @@ export const getChatRoomsForUser = async (userId) => {
   } catch (error) {
     console.error("Error retrieving chat rooms for user:", error.message);
   }
+};
+
+// Get all chatrooms
+
+
+export const getAllChatRooms = async () => {
+  try {
+    const snapshot = await get(ref(db, "chatRooms"));
+    if (snapshot.exists()) {
+      const roomsObject = snapshot.val(); // Firebase returns an object keyed by the unique IDs
+      return Object.keys(roomsObject).map((key) => ({
+        id: key, // Use the key as the ID
+        ...roomsObject[key], // Include the rest of the chat room data
+      }));
+    }
+    return []; // Return an empty array if no chat rooms exist
+  } catch (error) {
+    console.error("Error fetching chat rooms:", error.message);
+    return [];
+  }
+};
+
+
+
+// Fetch messages in real-time
+// export const getMessages = (chatRoomId, callback) => {
+//   const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
+//   onValue(messagesRef, (snapshot) => {
+//     if (snapshot.exists()) {
+//       const messages = Object.values(snapshot.val());
+//       callback(messages);
+//     } else {
+//       callback([]);
+//     }
+//   });
+// };
+
+export const getMessages = async (chatRoomId) => {
+  const messagesSnapshot = await get(ref(db,`chatRooms/${chatRoomId}/messages`));
+  const messages = messagesSnapshot.val()
+  if(!messagesSnapshot.exists()) {
+    return [];
+  }
+  console.log("Service Messages",messages)
+  return messages
+}
+
+// Send a message
+export const sendMessage = async (chatRoomId, message) => {
+  const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
+  const newMessageRef = push(messagesRef);
+  await set(newMessageRef, {
+    text: message.text,
+    sender: message.sender,
+    timestamp: new Date().toISOString(),
+  });
 };

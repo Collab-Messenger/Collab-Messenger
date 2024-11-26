@@ -22,6 +22,9 @@ import { Admin } from './Views/Admin/Admin'
 import { TeamDetails } from './Views/TeamDetails/TeamDetails'
 import { TeamsCreate } from './Views/TeamsCreate/TeamsCreate'
 import { VideoCallView } from './Views/VideoCall/VideoCallView'
+import ChatRoomList from './components/ChatRoom/chat-roomlist'
+import ChatRoomView from './Views/ChatRoomView/chat-room-view'
+
 function App() {
     const [appState, setAppState] = useState({
         user: null,
@@ -59,6 +62,8 @@ function App() {
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/teams" element={<Teams />} />
+                                <Route path="/teams/:teamId" element={<TeamDetails />} />
+                                <Route path="/createTeam" element={<TeamsCreate />} />
                                 <Route path="/users" element={<></>}/>
                                 <Route path='/friends' element={<Friends/>}/>
                                 <Route path='/admin' element={<Admin/>}/>
