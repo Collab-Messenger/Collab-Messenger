@@ -43,7 +43,7 @@ export const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
+ const handleLogout = () => {
     auth.signOut().then(() => {
       setAppState({
         userForm: null,
@@ -78,7 +78,6 @@ return (
             {(userForm.firstName !== userData.firstName || userForm.lastName !== userData.lastName || userForm.phone !== userData.phone || userForm.address !== userData.address) && (
                     <button className="update" onClick={handleSubmit}>Update</button>
             )}
-                <button className="logout" onClick={handleLogout}>Logout</button>
             </div>
 
         </div>

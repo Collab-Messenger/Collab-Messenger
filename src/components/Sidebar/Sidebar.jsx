@@ -16,10 +16,14 @@ const Sidebar = () => {
   const chatRoomList = () => {
     navigate("ChatRoomList")
   }
+  const handleViewTeams = () => {
+    navigate("teams");
+  };
   return (
     <div className={styles.sidebar}>
       <div className="join join-vertical" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <button className="btn join-item">DM's</button>
+        <button className="btn join-item" onClick={handleViewTeams}>Teams</button>
         <div style={{ marginTop: '50px' }}>
           <button className="btn join-item" onClick={handleChatRoom}>ChatRoom</button>
           <button className="btn join-item" onClick={chatRoomList}> Chat Lists</button>

@@ -74,14 +74,16 @@ export const updateUser = async (handle, userData) => {
  * @returns {Function} - The unsubscribe function.
  */
 export const getAllUsers = (callback) => {
-  const usersRef = ref(db, 'users');
-  const unsubscribe = onValue(usersRef, (snapshot) => {
-    const users = snapshot.val();
-    const usersArray = Object.keys(users).map(key => users[key]);
-    callback(usersArray);
-  });
-  return unsubscribe;
-};
+    const db = getDatabase();
+    const usersRef = ref(db, 'users');
+    onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        callback(Object.values(snapshot.val()));
+      } else {
+        callback([]);
+      }
+    });
+  };
 
 /**
  * Adds a post to a user.
@@ -107,6 +109,62 @@ export const addFriendRequestToUser = async (handle, senderHandle) => {
     await update(userRef, { friendRequests });
   };
 
+export const acceptFriendRequest = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const senderRef = ref(db, `users/${senderHandle}`);
+
+    const userSnapshot = await get(userRef);
+    const senderSnapshot = await get(senderRef);
+
+    if (userSnapshot.exists() && senderSnapshot.exists()) {
+        const user = userSnapshot.val();
+        const sender = senderSnapshot.val();
+
+        const friendRequests = user.friendRequests || [];
+        const userFriends = user.friends || [];
+        const senderFriends = sender.friends || [];
+
+        const updatedFriendRequests = friendRequests.filter(request => request !== senderHandle);
+
+        userFriends.push(senderHandle);
+        senderFriends.push(handle);
+
+        await update(userRef, { friendRequests: updatedFriendRequests, friends: userFriends });
+        await update(senderRef, { friends: senderFriends });
+    }
+};
+
+
+export const removeFriend = async (handle, friendHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const friendRef = ref(db, `users/${friendHandle}`);
+
+    const userSnapshot = await get(userRef);
+    const friendSnapshot = await get(friendRef);
+
+    if (userSnapshot.exists() && friendSnapshot.exists()) {
+        const user = userSnapshot.val();
+        const friendData = friendSnapshot.val();
+
+        const userFriends = user.friends || [];
+        const friendFriends = friendData.friends || [];
+
+        const updatedUserFriends = userFriends.filter(friend => friend !== friendHandle);
+        const updatedFriendFriends = friendFriends.filter(friend => friend !== handle);
+
+        await update(userRef, { friends: updatedUserFriends });
+        await update(friendRef, { friends: updatedFriendFriends });
+    }
+};
+
+export const declineFriendRequest = async (handle, senderHandle) => {
+    const userRef = ref(db, `users/${handle}`);
+    const userSnapshot = await get(userRef);
+    const user = userSnapshot.val();
+    const friendRequests = user.friendRequests || [];
+    const updatedFriendRequests = friendRequests.filter(request => request !== senderHandle);
+    await update(userRef, { friendRequests: updatedFriendRequests });
+}
   
 
 /**
@@ -210,5 +268,46 @@ export const searchUsers = async (searchTerm) => {
     const usersSnapshot = await get(usersRef);
     const users = usersSnapshot.val();
     const usersArray = Object.keys(users).map(key => users[key]);
-    return usersArray.filter(user => user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
+    return usersArray.filter(user => user.handle && user.handle.toLowerCase().includes(searchTerm.toLowerCase()));
+  };
+
+/**
+ * Sets the user's online status.
+ * @param {string} handle - The handle of the user.
+ * @param {boolean} isOnline - The online status of the user.
+ * @returns {Promise<void>}
+ */
+export const setUserOnlineStatus = async (handle) => {
+    const userRef = ref(db, `users/${handle}`);
+    await update(userRef, { isOnline: true });
+  };
+
+export const setUserOfflineStatus = async (handle) => {
+    const userRef = ref(db, `users/${handle}`);
+    await update(userRef, { isOnline: false });
+  }
+  export const getFriends = async (userId) => {
+    try {
+      const userRef = ref(db, `users/${userId}`);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        if (userData.friends) {
+          const friendsPromises = userData.friends.map(async (friendId) => {
+            const friendRef = ref(db, `users/${friendId}`);
+            const friendSnapshot = await get(friendRef);
+            if (friendSnapshot.exists()) {
+              return { id: friendId, ...friendSnapshot.val() };
+            }
+            return null;
+          });
+          const friends = await Promise.all(friendsPromises);
+          return friends.filter(friend => friend !== null);
+        }
+      }
+      return [];
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
   };

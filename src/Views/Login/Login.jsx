@@ -1,7 +1,7 @@
 // import './Login.css';
 import { useState, useContext } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { AppContext } from "../../Store/app-context";
+import { AppContext } from "../../store/app-context";
 import { loginUser } from "../../services/auth.service";
 // import { FaArrowRight } from "react-icons/fa";
 
