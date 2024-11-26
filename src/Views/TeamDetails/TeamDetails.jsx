@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTeamById, removeMemberFromTeam, addMemberToTeam } from '../../services/teams.service.js';
+import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
 
@@ -96,6 +96,15 @@ export const TeamDetails = () => {
     setShowUsers((prev) => !prev);
   };
 
+  const handleLeaveTeam = async () => {
+    try {
+      await leaveTeam(teamId, userHandle);
+      navigate('/teams');
+    } catch (error) {
+      console.error('Error leaving team:', error);
+    }
+  };
+
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
@@ -116,7 +125,7 @@ export const TeamDetails = () => {
             {members.map((handle, index) => (
               <div key={`member-${handle}-${index}`} style={{ marginBottom: '10px' }}>
                 {handle}
-                
+
                 {isOwner && handle !== userHandle && (
                   <button onClick={() => handleKickMember(handle)}>Kick</button>
                 )}
@@ -126,7 +135,6 @@ export const TeamDetails = () => {
         </div>
       )}
 
-     
       {isOwner && (
         <>
           <button onClick={handleShowUsers}>
@@ -148,6 +156,8 @@ export const TeamDetails = () => {
           )}
         </>
       )}
+
+      <button onClick={handleLeaveTeam}>Leave Team</button>
     </div>
   );
 };

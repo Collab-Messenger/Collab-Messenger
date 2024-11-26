@@ -1,4 +1,4 @@
-import { ref, set, push, get, update} from "firebase/database";
+import { ref, set, push, get, update, remove} from "firebase/database";
 import { db } from "../config/firebase-config";
 
 
@@ -130,4 +130,36 @@ export const getTeamById = async (teamId) => {
     await update(teamRef, { members: updatedMembers });
     return { ...teamData, members: updatedMembers };
   };
+  
+
+  export const leaveTeam = async (teamId, memberHandle) => {
+    const teamRef = ref(db, `teams/${teamId}`);
+    const teamSnapshot = await get(teamRef);
+  
+    if (!teamSnapshot.exists()) {
+      throw new Error('Team not found');
+    }
+  
+    const teamData = teamSnapshot.val();
+    const updatedMembers = teamData.members.filter(handle => handle !== memberHandle);
+  
+    // If the leaving user is the owner, transfer ownership
+    if (teamData.owner === memberHandle) {
+      if (updatedMembers.length > 0) {
+        const newOwnerHandle = updatedMembers[0]; // Transfer ownership to the first member
+        await update(teamRef, { owner: newOwnerHandle, members: updatedMembers });
+      } else {
+        // If no members left, delete the team
+        await remove(teamRef);
+        return null; // Team deleted
+      }
+    } else {
+      // If the user is not the owner, just remove them from the members list
+      await update(teamRef, { members: updatedMembers });
+    }
+  
+    return { ...teamData, members: updatedMembers };
+  };
+  
+  // Add any other necessary functions like addMemberToTeam or removeMemberFromTeam
   
