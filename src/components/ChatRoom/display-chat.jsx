@@ -1,32 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import { getMessages,sendMessage } from "../../services/chat.service";
+import React, { useState } from "react";
+import { sendMessage } from "../../services/chat.service";
 
-//component to display messages and send new ones
-const ChatRoom = () => {
-//   const { id } = useParams(); //Needs to happen in view 
-//   const location = useLocation();
-//   console.log(location)
-//   console.log("IDinChatRoom",id)
-  const [messages, setMessages] = useState([]);
+const ChatRoom = ({ messages, chatRoomId }) => {
   const [newMessage, setNewMessage] = useState("");
-
-  useEffect(() => {
-    // Fetch messages in real-time
-    getMessages(id, (fetchedMessages) => {
-      setMessages(fetchedMessages);
-    });
-  }, [id]);
-
+  
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
-        sender: "currentUserId", // Replace with logged-in user's ID
+        sender: "currentUserId", // Replace with actual user ID
         timestamp: new Date().toISOString(),
       };
-      await sendMessage(id, message);
+      await sendMessage(chatRoomId, message);
       setNewMessage(""); // Clear input field
     }
   };
@@ -39,7 +25,10 @@ const ChatRoom = () => {
           <p>No messages yet. Start the conversation!</p>
         ) : (
           messages.map((msg, index) => (
-            <div key={index} className={`message ${msg.sender === "currentUserId" ? "sent" : "received"}`}>
+            <div
+              key={index}
+              className={`message ${msg.sender === "currentUserId" ? "sent" : "received"}`}
+            >
               <p>{msg.text}</p>
               <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
             </div>
