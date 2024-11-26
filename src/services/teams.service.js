@@ -42,30 +42,30 @@ export const isTeamNameUnique = async (name) => {
 
 export const getTeams = async (userHandle) => {
   try {
-    const snapshot = await get(ref(db, 'teams'));
+    const snapshot = await get(ref(db, `users/${userHandle}/teams`)); 
     if (!snapshot.exists()) {
       return [];
     }
 
-    const allTeams = snapshot.val();
-    const userTeams = [];
+    const userTeamsIds = snapshot.val(); 
+    if (!userTeamsIds) {
+      return [];
+    }
 
-    for (const [teamId, teamData] of Object.entries(allTeams)) {
-      const members = Array.isArray(teamData.members) ? teamData.members : [];
-      const owner = teamData.owner || '';
-      if (owner === userHandle || members.includes(userHandle)) {
-        userTeams.push({ id: teamId, ...teamData });
+    const userTeams = [];
+    for (const teamId of Object.keys(userTeamsIds)) {
+      const teamSnapshot = await get(ref(db, `teams/${teamId}`));
+      if (teamSnapshot.exists()) {
+        userTeams.push({ id: teamId, ...teamSnapshot.val() });
       }
     }
 
-    console.log("Fetched Teams:", userTeams);
     return userTeams;
   } catch (error) {
     console.error("Error fetching teams:", error);
     return [];
   }
 };
-
 
 
 export const getTeamById = async (teamId) => {
@@ -80,23 +80,27 @@ export const getTeamById = async (teamId) => {
       console.log(error.message);
     }
   };
-  export const addMemberToTeam = async (teamId, memberId) => {
+  export const addMemberToTeam = async (teamId, userHandle) => {
     try {
       const teamRef = ref(db, `teams/${teamId}`);
-      const snapshot = await get(teamRef);
-      if (snapshot.exists()) {
-        const team = snapshot.val();
-        if (!team.members.includes(memberId)) {
-          team.members.push(memberId);
-          await update(teamRef, team);
-        }
-        return team;
+      const teamSnapshot = await get(teamRef);
+      if (!teamSnapshot.exists()) {
+        throw new Error("Team not found");
       }
-      return null;
+  
+      const teamData = teamSnapshot.val();
+      const updatedMembers = [...teamData.members, userHandle];
+      await update(teamRef, { members: updatedMembers });
+  
+      const userRef = ref(db, `users/${userHandle}/teams/${teamId}`);
+      await set(userRef, true);
+  
+      return { id: teamId, ...teamData };
     } catch (error) {
-      console.log(error.message);
+      console.error("Error adding member to team:", error);
     }
   };
+  
   
   export const addChannelToTeam = async (teamId, channelName) => {
     try {
@@ -116,50 +120,50 @@ export const getTeamById = async (teamId) => {
   };
   
   
-  export const removeMemberFromTeam = async (teamId, memberHandle) => {
-    const teamRef = ref(db, `teams/${teamId}`);
-    const teamSnapshot = await get(teamRef);
-    if (!teamSnapshot.exists()) {
-      throw new Error('Team not found');
-    }
+  export const removeMemberFromTeam = async (teamId, userHandle) => {
+    try {
+      const teamRef = ref(db, `teams/${teamId}`);
+      const teamSnapshot = await get(teamRef);
+      if (!teamSnapshot.exists()) {
+        throw new Error("Team not found");
+      }
   
-    const teamData = teamSnapshot.val();
-    const updatedMembers = teamData.members.filter(
-      (handle) => handle !== memberHandle
-    );
-    await update(teamRef, { members: updatedMembers });
-    return { ...teamData, members: updatedMembers };
+      const teamData = teamSnapshot.val();
+      const updatedMembers = teamData.members.filter(member => member !== userHandle);
+      await update(teamRef, { members: updatedMembers });
+  
+
+      const userRef = ref(db, `users/${userHandle}/teams/${teamId}`);
+      await remove(userRef);
+  
+      return { id: teamId, ...teamData };
+    } catch (error) {
+      console.error("Error removing member from team:", error);
+    }
   };
   
 
-  export const leaveTeam = async (teamId, memberHandle) => {
-    const teamRef = ref(db, `teams/${teamId}`);
-    const teamSnapshot = await get(teamRef);
-  
-    if (!teamSnapshot.exists()) {
-      throw new Error('Team not found');
-    }
-  
-    const teamData = teamSnapshot.val();
-    const updatedMembers = teamData.members.filter(handle => handle !== memberHandle);
-  
-    // If the leaving user is the owner, transfer ownership
-    if (teamData.owner === memberHandle) {
-      if (updatedMembers.length > 0) {
-        const newOwnerHandle = updatedMembers[0]; // Transfer ownership to the first member
-        await update(teamRef, { owner: newOwnerHandle, members: updatedMembers });
-      } else {
-        // If no members left, delete the team
-        await remove(teamRef);
-        return null; // Team deleted
+  export const leaveTeam = async (teamId, userHandle) => {
+    try {
+      const teamRef = ref(db, `teams/${teamId}`);
+      const teamSnapshot = await get(teamRef);
+      if (!teamSnapshot.exists()) {
+        throw new Error("Team not found");
       }
-    } else {
-      // If the user is not the owner, just remove them from the members list
-      await update(teamRef, { members: updatedMembers });
-    }
   
-    return { ...teamData, members: updatedMembers };
+      const teamData = teamSnapshot.val();
+      const updatedMembers = teamData.members.filter(member => member !== userHandle);
+      await update(teamRef, { members: updatedMembers });
+
+      const userRef = ref(db, `users/${userHandle}/teams/${teamId}`);
+      await remove(userRef);
+  
+      return { id: teamId, ...teamData };
+    } catch (error) {
+      console.error("Error leaving team:", error);
+    }
   };
+  
   
 
 export const changeOwner = async (teamId, newOwnerHandle) => {
@@ -180,4 +184,5 @@ export const changeOwner = async (teamId, newOwnerHandle) => {
 
   return { ...teamData, owner: newOwnerHandle };
 };
+
 
