@@ -21,7 +21,7 @@ import { Friends } from './Views/Friends/Friends'
 import { Admin } from './Views/Admin/Admin'
 import { TeamDetails } from './Views/TeamDetails/TeamDetails'
 import { TeamsCreate } from './Views/TeamsCreate/TeamsCreate'
-
+import { VideoCallView } from './Views/VideoCall/VideoCallView'
 function App() {
     const [appState, setAppState] = useState({
         user: null,
@@ -47,7 +47,7 @@ function App() {
         <>
             <AppContext.Provider value={{ ...appState, setAppState }}>
                 <BrowserRouter>
-
+                
                     <Header />
                     <Sidebar />
                     <div className="min-h-screen flex flex-row pt-16">
@@ -66,9 +66,11 @@ function App() {
                                 <Route path='/createChatRoom' element={<CreateChatRoom/>}/>
                                 <Route path='/teams/:teamId' element={<TeamDetails/>}/>
                                 <Route path='/createTeam' element={<TeamsCreate/>}/>
+                                <Route path='/videoCall' element={<VideoCallView/>}/>
                             </Routes>
                         </div>
                     </div>
+                    
             </BrowserRouter>
         </AppContext.Provider >
         </>
