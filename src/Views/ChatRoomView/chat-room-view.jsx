@@ -6,14 +6,26 @@ import ChatRoom from "../../components/ChatRoom/display-chat";
 
 
 export default function chatRoomView () {
-    const [messages, setMessages] = useState([]);
+
+    const [message, setMessages] = useState([]);
     const { id } = useParams();
 
+
+    useEffect (() => {
+      const text = onValue(ref(db,`chatRoom/${id}`),(snapshot) => {
+        const updateText = snapshot.val();
+        setText({
+          ...updateText,
+          sentBy: Object.keys(updateText.likedBy ?? {})
+        })
+      })
+      return () => text;
+    })
     
     return (
         <div>
           <h1>Single Tweet</h1>
-          {tweet && <ChatRoom tweet={tweet}></ChatRoom>}
+          {tweet && <ChatRoom message={message}></ChatRoom>}
         </div>
       )
 }

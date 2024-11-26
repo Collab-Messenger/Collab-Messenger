@@ -8,7 +8,7 @@ const ChatRoom = () => {
 //   const location = useLocation();
 //   console.log(location)
 //   console.log("IDinChatRoom",id)
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
