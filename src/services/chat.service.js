@@ -106,17 +106,27 @@ export const getAllChatRooms = async () => {
 
 
 // Fetch messages in real-time
-export const getMessages = (chatRoomId, callback) => {
-  const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
-  onValue(messagesRef, (snapshot) => {
-    if (snapshot.exists()) {
-      const messages = Object.values(snapshot.val());
-      callback(messages);
-    } else {
-      callback([]);
-    }
-  });
-};
+// export const getMessages = (chatRoomId, callback) => {
+//   const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
+//   onValue(messagesRef, (snapshot) => {
+//     if (snapshot.exists()) {
+//       const messages = Object.values(snapshot.val());
+//       callback(messages);
+//     } else {
+//       callback([]);
+//     }
+//   });
+// };
+
+export const getMessages = async (chatRoomId) => {
+  const messagesSnapshot = await get(ref(db,`chatRooms/${chatRoomId}/messages`));
+  const messages = messagesSnapshot.val()
+  if(!messagesSnapshot.exists()) {
+    return [];
+  }
+  console.log("Service Messages",messages)
+  return messages
+}
 
 // Send a message
 export const sendMessage = async (chatRoomId, message) => {
