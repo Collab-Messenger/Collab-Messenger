@@ -73,17 +73,17 @@ export const updateUser = async (handle, userData) => {
  * @param {Function} callback - The callback function to execute with the users data.
  * @returns {Function} - The unsubscribe function.
  */
-export const getAllUsers = (callback) => {
-    const db = getDatabase();
-    const usersRef = ref(db, 'users');
-    onValue(usersRef, (snapshot) => {
-      if (snapshot.exists()) {
-        callback(Object.values(snapshot.val()));
-      } else {
-        callback([]);
-      }
-    });
-  };
+// export const getAllUsers = (callback) => {
+//     const db = getDatabase();
+//     const usersRef = ref(db, 'users');
+//     onValue(usersRef, (snapshot) => {
+//       if (snapshot.exists()) {
+//         callback(Object.values(snapshot.val()));
+//       } else {
+//         callback([]);
+//       }
+//     });
+//   };
 
 /**
  * Adds a post to a user.
@@ -311,3 +311,48 @@ export const setUserOfflineStatus = async (handle) => {
       return [];
     }
   };
+
+  export const getUserByUid = async (uid) => {
+    try {
+      const usersRef = ref(db, 'users');  // Get the 'users' node
+      const usersSnapshot = await get(usersRef);
+  
+      if (usersSnapshot.exists()) {
+        const users = usersSnapshot.val();
+        // Find the user with matching UID
+        for (let handle in users) {
+          const user = users[handle];
+          if (user.uid === uid) {
+            return user;  // Return the user data if UID matches
+          }
+        }
+        console.error(`User not found for UID: ${uid}`);
+        return null;
+      } else {
+        console.error('No users found.');
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  };
+
+
+export const getAllUsers = async () => {
+  try {
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+      const usersData = snapshot.val();
+      return Object.keys(usersData).map((key) => ({
+        ...usersData[key],
+        uid: key, 
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    return [];
+  }
+};
