@@ -5,7 +5,7 @@ export const VideoCallView = () => {
     
 
     return (
-        <div>
+        <div className="h-screen w-full">
             <VideoCall roomUrl={"https://linkupproject.daily.co/VideoCalls"}/>
         </div>
     );

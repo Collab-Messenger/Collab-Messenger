@@ -1,16 +1,23 @@
 .sidebar {
-    position: fixed;
-    left: 0;
-    width: 200px;
-    height: calc(100vh - 55px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 250px;
+    height: 100%;
     z-index: 200;
-    padding-top: 5px;
-    flex-shrink: 0;
     border-right-width: 1px;
     border-right-style: solid;
     border-right-color: rgb(228, 228, 228);
+    overflow-y: auto;
   }
-  
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
   .sidebar button {
     display: block;
     width: 100%;
@@ -18,7 +25,6 @@
   }
   
   .fixedBottom {
-    position: absolute;
     bottom: 120px;
     width: 100%;
     display: flex;

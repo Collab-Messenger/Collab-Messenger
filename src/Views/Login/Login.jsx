@@ -3,6 +3,7 @@ import { useState, useContext } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "../../store/app-context";
 import { loginUser } from "../../services/auth.service";
+import { setUserOnlineStatus } from "../../services/user.service";
 // import { FaArrowRight } from "react-icons/fa";
 
 /**
@@ -29,6 +30,8 @@ export function Login() {
   const checkLogin = async () => {
     try {
       const credentials = await loginUser(form.email, form.password);
+      setUserOnlineStatus(credentials.user.handle);
+      console.log(credentials);
       setAppState({
         user: credentials.user,
       });

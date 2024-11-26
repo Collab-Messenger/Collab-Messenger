@@ -7,13 +7,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { auth } from './config/firebase-config';
 import { AppContext } from './store/app-context'
-import { getUserData } from './services/user.service'
+import { getUserData, setUserOnlineStatus } from './services/user.service'
 import { NotFound } from './components/NotFound/NotFound'
 import { Register } from './Views/Register/Register'
 import { Login } from './Views/Login/Login'
 import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
-import AllUsers from './components/AllUsers/AllUsers'
 import { Notifications } from './Views/Notifications/Notifications'
 import Home from './Views/Home/Home'
 import CreateChatRoom from './components/ChatRoom/chat-room'
@@ -37,9 +36,11 @@ function App() {
         if (user) {
             getUserData(user.uid).then(snapshot => {
                 if (snapshot.exists()) {
+                    const userData = snapshot.val()[Object.keys(snapshot.val())[0]];
+                    setUserOnlineStatus(userData.handle);
                     setAppState({
                         user: user,
-                        userData: snapshot.val()[Object.keys(snapshot.val())[0]]
+                        userData, 
                     });
                 }
             });
@@ -50,11 +51,11 @@ function App() {
         <>
             <AppContext.Provider value={{ ...appState, setAppState }}>
                 <BrowserRouter>
-                
+                <div className="h-dvh flex flex-col">
                     <Header />
+          <div className="flex gap-1 h-full">
+            {/* Height = 100vh - headerHeight */}
                     <Sidebar />
-                    <div className="min-h-screen flex flex-row pt-16">
-          <div className="ml-64 flex-grow p-4">
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="*" element={<NotFound />} />
@@ -76,8 +77,7 @@ function App() {
                                 
                             </Routes>
                         </div>
-                    </div>
-                    
+                        </div>
             </BrowserRouter>
         </AppContext.Provider >
         </>
