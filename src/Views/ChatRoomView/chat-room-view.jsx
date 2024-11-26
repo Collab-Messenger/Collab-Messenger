@@ -1,31 +1,33 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../../config/firebase-config";
-import { onValue,ref } from "firebase/database";
+import { onValue, ref } from "firebase/database";
 import ChatRoom from "../../components/ChatRoom/display-chat";
 
+export default function ChatRoomView() {
+  const [messages, setMessages] = useState([]);
+  const { id } = useParams(); // Chat room ID from URL
 
-export default function chatRoomView () {
+  useEffect(() => {
+    const messagesRef = ref(db, `chatRooms/${id}`);
+    const unsubscribe = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) { 
+        // Convert object to array, if necessary
+        const parsedMessages = Object.values(data);
+        setMessages(parsedMessages);
+      } else {
+        setMessages([]); // No messages yet
+      }
+    });
 
-    const [message, setMessages] = useState([]);
-    const { id } = useParams();
+    return () => unsubscribe(); // Clean up listener on unmount
+  }, [id]);
 
-
-    useEffect (() => {
-      const text = onValue(ref(db,`chatRoom/${id}`),(snapshot) => {
-        const updateText = snapshot.val();
-        setText({
-          ...updateText,
-          sentBy: Object.keys(updateText.likedBy ?? {})
-        })
-      })
-      return () => text;
-    })
-    
-    return (
-        <div>
-          <h1>Single Tweet</h1>
-          {tweet && <ChatRoom message={message}></ChatRoom>}
-        </div>
-      )
+  return (
+    <div>
+      <h1>Chat Room</h1>
+      <ChatRoom messages={messages} chatRoomId={id} />
+    </div>
+  );
 }
