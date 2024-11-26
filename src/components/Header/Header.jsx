@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../store/app-context';
 import { useContext } from 'react';
 import { Search } from '../Search/Search';
-import { PiDiscordLogoBold } from "react-icons/pi";
+import { PiHandshakeBold } from "react-icons/pi";
 import { auth } from '../../config/firebase-config';
 import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.service';
 
@@ -11,12 +11,7 @@ import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.s
 const Header = () => {
     const navigate = useNavigate();
     const { userData, setAppState } = useContext(AppContext);
-    const [menuOpen, setMenuOpen] = useState(false);
 
-    const toggleMenu = () => {
-        setMenuOpen(!menuOpen);
-
-    };
 
     const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
     const userStatusOffline = () => setUserOfflineStatus(userData?.handle);
@@ -37,6 +32,7 @@ const Header = () => {
     const handleLogout = async () => {
         try {
           await auth.signOut();
+          await userStatusOffline();
           setAppState({
             userForm: null,
             userData: null
@@ -48,10 +44,10 @@ const Header = () => {
       };
 
     return (
-        <header className="flex items-center justify-between bg-gray-800 text-white p-4">
+        <header className="flex items-center justify-between bg-gray-800 text-white p-4 w-full">
             {/* Logo Section */}
             <div className="logo">
-                <NavLink to='/'><PiDiscordLogoBold /></NavLink>
+                <NavLink to='/'><div className='p-5'><PiHandshakeBold /></div></NavLink>
             </div>
             
             {userData ? (
@@ -59,15 +55,12 @@ const Header = () => {
                     <Search />
                 </>
             ):(
-                <></>
+                null
             )}
 
             {/* Profile Button */}
-
-            <div className="relative">
-                <button
-                    onClick={toggleMenu}>
-                    {userData?.isOnline ? (
+            <details className="dropdown">
+  <summary >{userData?.isOnline ? (
                         <div className="avatar online placeholder">
                         <div className="bg-neutral text-neutral-content w-16 rounded-full">
                             <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
@@ -79,13 +72,9 @@ const Header = () => {
                             <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
                         </div>
                     </div>
-                    )}
-                    
-                </button>
-
-                {menuOpen && (
-                    <ul className="menu bg-base-200 w-56 absolute top-full mt-2 right-0 shadow-lg rounded-lg">
-                        {userData? (
+                    )}</summary>
+  <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+  {userData? (
                             <>
                                 <NavLink to='/profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
                                 <NavLink to='/friends'><li><a href="#item2">Friends</a></li></NavLink>
@@ -112,8 +101,10 @@ const Header = () => {
                         {userData && (
                             <li><a href="#item5" onClick={handleLogout}>Logout</a></li>
                         )}
-                    </ul>
-                )}
+  </ul>
+</details>
+
+            <div className="relative">
                 <div className="indicator">
                     <NavLink to='notifications'>
                         <svg

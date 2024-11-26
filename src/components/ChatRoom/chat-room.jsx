@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { addChatRoom,isChatRoomNameUnique } from "../../services/chat.service";
 
+
+//Creation form for chats
 const CreateChatRoom = () => {
   const [roomName, setRoomName] = useState("");
   const [description, setDescription] = useState("");

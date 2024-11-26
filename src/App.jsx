@@ -60,12 +60,9 @@ function App() {
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/teams" element={<Teams />} />
                                 <Route path="/users" element={<></>}/>
-                                <Route path='/friends' element={<Friends/>}/>
-                                <Route path='/admin' element={<Admin/>}/>
-                                <Route path='/notifications' element={<Notifications/>}/>
-                                <Route path='/createChatRoom' element={<CreateChatRoom/>}/>
-                                <Route path='/teams/:teamId' element={<TeamDetails/>}/>
-                                <Route path='/createTeam' element={<TeamsCreate/>}/>
+                                <Route path='friends' element={<AllUsers/>}/>
+                                <Route path='notifications' element={<Notifications/>}/>
+                                <Route path='createChatRoom' element={<CreateChatRoom/>}/>
                             </Routes>
                         </div>
                     </div>
