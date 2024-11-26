@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { addTeam, isTeamNameUnique } from "../../services/teams.service.js";
 import { AppContext } from "../../store/app-context.js";
 import { useNavigate } from "react-router-dom";
-import { getUserByUid } from "../../services/user.service.js"; // Import the function to get user details
+import { getUserByUid } from "../../services/user.service.js";
 
 export function TeamsCreate() {
   const { user } = useContext(AppContext);
@@ -11,7 +11,7 @@ export function TeamsCreate() {
     id: '',
     name: '',
     members: '',
-    owner: null, // Set to null initially
+    owner: null,
     channels: []
   });
 
@@ -28,7 +28,6 @@ export function TeamsCreate() {
     }
 
     try {
-      // Fetch the current user's handle if not already available
       const userHandle = user?.handle || (await getUserByUid(user.uid)).handle;
 
       if (!userHandle) {
@@ -38,8 +37,8 @@ export function TeamsCreate() {
 
       const newTeam = {
         name: team.name,
-        members: [userHandle], // Use the dynamically fetched handle
-        owner: userHandle, // Use handle for the owner
+        members: [userHandle],
+        owner: userHandle,
         channels: team.channels
       };
 
