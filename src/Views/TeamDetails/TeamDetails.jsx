@@ -33,11 +33,14 @@ export const TeamDetails = () => {
   }, [teamId]);
 
   const handleKickMember = async (memberHandle) => {
+    console.log('Attempting to kick member:', memberHandle);
+  
     try {
       const updatedTeam = await removeMemberFromTeam(teamId, memberHandle);
+      console.log('Updated team from Firebase:', updatedTeam);
+  
+      // Update local states
       setTeam(updatedTeam);
-
-      // Remove the member from the state
       setMembers((prevMembers) =>
         prevMembers.filter((handle) => handle !== memberHandle)
       );
@@ -50,14 +53,16 @@ export const TeamDetails = () => {
     try {
       const updatedTeam = await addMemberToTeam(teamId, userHandle);
       setTeam(updatedTeam);
-
-      // Add the new member to the members array
+  
+      // Optimistically update the members list
       setMembers((prevMembers) => [...prevMembers, userHandle]);
+  
+      // Remove the added user from the "allUsers" list
+      setAllUsers((prevUsers) => prevUsers.filter((user) => user.handle !== userHandle));
     } catch (error) {
       console.error('Error adding member:', error);
     }
   };
-
   const handleShowMembers = () => {
     setShowMembers((prev) => !prev);
   };
@@ -94,17 +99,16 @@ export const TeamDetails = () => {
       {showMembers && (
         <div>
           <h2>Members:</h2>
-          <ul>
+          <div>
             {members.map((handle, index) => (
-              <li key={index}>
+              <div key={`member-${handle}-${index}`} style={{ marginBottom: '10px' }}>
                 {handle}
-                {/* Allow kicking a member */}
-                {handle !== user.handle && ( // Prevent kicking yourself
+                {handle !== user.handle && (
                   <button onClick={() => handleKickMember(handle)}>Kick</button>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
@@ -116,14 +120,14 @@ export const TeamDetails = () => {
       {showUsers && (
         <div>
           <h2>All Users:</h2>
-          <ul>
-            {allUsers.map((user) => (
-              <li key={user.handle}>
+          <div>
+            {allUsers.map((user, index) => (
+              <div key={`user-${user.handle}-${index}`} style={{ marginBottom: '10px' }}>
                 {user.handle}
                 <button onClick={() => handleAddMember(user.handle)}>Add to Team</button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>

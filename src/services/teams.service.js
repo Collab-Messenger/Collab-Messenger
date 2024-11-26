@@ -119,18 +119,27 @@ export const getTeamById = async (teamId) => {
     }
   };
   
-  export const removeMemberFromTeam = async (teamId, memberId) => {
-    try {
-      const teamRef = ref(db, `teams/${teamId}`);
-      const snapshot = await get(teamRef);
-      if (snapshot.exists()) {
-        const team = snapshot.val();
-        team.members = team.members.filter(member => member.id !== memberId);
-        await update(teamRef, team);
-        return team;
-      }
-      return null;
-    } catch (error) {
-      console.log(error.message);
+  
+  export const removeMemberFromTeam = async (teamId, memberHandle) => {
+    const teamRef = ref(db, `teams/${teamId}`);
+  
+    // Fetch the current team data
+    const teamSnapshot = await get(teamRef);
+    if (!teamSnapshot.exists()) {
+      throw new Error('Team not found');
     }
+  
+    const teamData = teamSnapshot.val();
+  
+    // Remove the member from the members array
+    const updatedMembers = teamData.members.filter(
+      (handle) => handle !== memberHandle
+    );
+  
+    // Update the team in Firebase
+    await update(teamRef, { members: updatedMembers });
+  
+    // Return the updated team data
+    return { ...teamData, members: updatedMembers };
   };
+  
