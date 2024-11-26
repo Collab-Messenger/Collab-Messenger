@@ -1,15 +1,21 @@
-import React, { useState } from "react";
-import { sendMessage } from "../../services/chat.service";
+import React, { useContext, useEffect, useState } from "react";
+import { getMessages, sendMessage } from "../../services/chat.service";
+import { AppContext } from "../../store/app-context";
 
 const ChatRoom = ({ messages, chatRoomId }) => {
   const [newMessage, setNewMessage] = useState("");
-  
+  const [allMessages,setMessages] = useState([])
+  const {userData} = useContext(AppContext)
+  // console.log(userData);
+  // console.log("messagesFromDB",allMessages)
+  // console.log("messagesAllR",allMessagesReversed)
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
-        sender: "currentUserId", // Replace with actual user ID
+        sender: userData.handle, // Replace with actual user ID
         timestamp: new Date().toISOString(),
       };
       await sendMessage(chatRoomId, message);
@@ -17,14 +23,21 @@ const ChatRoom = ({ messages, chatRoomId }) => {
     }
   };
 
+  useEffect(()=>{
+    getMessages(chatRoomId).then(setMessages)
+
+  },[messages])
+
+  const allMessagesReversed = Object.values(allMessages);
+
   return (
     <div className="chat-room">
       <h2>Chat Room</h2>
       <div className="messages">
-        {messages.length === 0 ? (
+        {allMessagesReversed.length === 0 ? (
           <p>No messages yet. Start the conversation!</p>
         ) : (
-          messages.map((msg, index) => (
+          allMessagesReversed?.map((msg, index) => (
             <div
               key={index}
               className={`message ${msg.sender === "currentUserId" ? "sent" : "received"}`}
