@@ -67,11 +67,13 @@ function App() {
                                 <Route path="/users" element={<></>}/>
                                 <Route path='/friends' element={<Friends/>}/>
                                 <Route path='/admin' element={<Admin/>}/>
-                                <Route path='/notifications' element={<Notifications/>}/>
-                                <Route path='/createChatRoom' element={<CreateChatRoom/>}/>
                                 <Route path='/teams/:teamId' element={<TeamDetails/>}/>
-                                <Route path='/createTeam' element={<TeamsCreate/>}/>
                                 <Route path='/videoCall' element={<VideoCallView/>}/>
+                                <Route path='notifications' element={<Notifications/>}/>
+                                <Route path='createChatRoom' element={<CreateChatRoom/>}/>
+                                <Route path='chatRoomList' element={<ChatRoomList/>}/>
+                                <Route path='/chatRooms/:id' element={<ChatRoomView/>}/>
+                                
                             </Routes>
                         </div>
                     </div>
