@@ -3,6 +3,8 @@ import { addTeam, isTeamNameUnique } from "../../services/teams.service.js";
 import { AppContext } from "../../store/app-context.js";
 import { useNavigate } from "react-router-dom";
 import { getUserByUid } from "../../services/user.service.js";
+import { ref, set } from "firebase/database"; 
+import { db } from "../../config/firebase-config";
 
 export function TeamsCreate() {
   const { user } = useContext(AppContext);
@@ -15,10 +17,12 @@ export function TeamsCreate() {
     channels: []
   });
 
+
   const createTeam = async () => {
+
     if (team.name.length < 3 || team.name.length > 40) {
-       alert('Team name must be between 3 and 40 characters.');
-       return;
+      alert('Team name must be between 3 and 40 characters.');
+      return;
     }
 
     const isUnique = await isTeamNameUnique(team.name);
@@ -28,6 +32,7 @@ export function TeamsCreate() {
     }
 
     try {
+  
       const userHandle = user?.handle || (await getUserByUid(user.uid)).handle;
 
       if (!userHandle) {
@@ -43,11 +48,16 @@ export function TeamsCreate() {
       };
 
       const teamId = await addTeam(newTeam);
+
+   
       setTeam((prevTeam) => ({
         ...prevTeam,
         id: teamId,
         name: '',
       }));
+
+      const userTeamRef = ref(db, `users/${userHandle}/teams/${teamId}`);
+      await set(userTeamRef, true);
       navigate('/teams');
       return;
     } catch (error) {
