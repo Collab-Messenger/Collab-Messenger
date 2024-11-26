@@ -7,16 +7,22 @@ const Sidebar = () => {
 
   const navigate = useNavigate();
 
-  const handleCreateChatRoom  = () =>{
-        navigate("createChatRoom")
+  const handleCreateChatRoom = () => {
+    navigate("createChatRoom")
+  }
+  const handleChatRoom = () => {
+    navigate("/ChatRoom/:id")
+  }
+  const chatRoomList = () => {
+    navigate("ChatRoomList")
   }
   return (
     <div className={styles.sidebar}>
       <div className="join join-vertical" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <button className="btn join-item">DM's</button>
         <div style={{ marginTop: '50px' }}>
-          <button className="btn join-item">Channel 1</button>
-          <button className="btn join-item">Channel 2</button>
+          <button className="btn join-item" onClick={handleChatRoom}>ChatRoom</button>
+          <button className="btn join-item" onClick={chatRoomList}> Chat Lists</button>
           <button className="btn join-item">Channel 3</button>
         </div>
         <div className={styles.fixedBottom}>
