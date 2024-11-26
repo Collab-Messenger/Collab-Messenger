@@ -59,6 +59,8 @@ function App() {
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/teams" element={<Teams />} />
+                                <Route path="/teams/:teamId" element={<TeamDetails />} />
+                                <Route path="/createTeam" element={<TeamsCreate />} />
                                 <Route path="/users" element={<></>}/>
                                 <Route path='friends' element={<AllUsers/>}/>
                                 <Route path='notifications' element={<Notifications/>}/>
