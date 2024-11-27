@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam, changeOwner } from '../../services/teams.service.js';
+import { ref, onValue, off } from 'firebase/database';
+import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam, changeOwner, deleteTeam } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
+import { db } from '../../config/firebase-config';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
 
 export const TeamDetails = () => {
@@ -34,29 +36,28 @@ export const TeamDetails = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    const fetchTeam = async () => {
-      try {
-        const teamData = await getTeamById(teamId);
+    const teamRef = ref(db, `teams/${teamId}`);
+    const unsubscribe = onValue(teamRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const teamData = snapshot.val();
         setTeam(teamData);
-        setMembers(teamData.members);
-      } catch (error) {
-        console.error('Error fetching team:', error);
+        setMembers(teamData.members || []);
+      } else {
+        navigate('/teams');
       }
-    };
+    });
 
-    fetchTeam();
-  }, [teamId]);
+    return () => {
+      off(teamRef);
+    };
+  }, [teamId, navigate]);
 
   const isOwner = team?.owner === userHandle;
 
   const handleKickMember = async (memberHandle) => {
     if (!isOwner) return;
     try {
-      const updatedTeam = await removeMemberFromTeam(teamId, memberHandle);
-      setTeam(updatedTeam);
-      setMembers((prevMembers) =>
-        prevMembers.filter((handle) => handle !== memberHandle)
-      );
+      await removeMemberFromTeam(teamId, memberHandle);
     } catch (error) {
       console.error('Error kicking member:', error);
     }
@@ -65,12 +66,8 @@ export const TeamDetails = () => {
   const handleAddMember = async (userHandle) => {
     if (!isOwner) return;
     try {
-      const updatedTeam = await addMemberToTeam(teamId, userHandle);
-      setTeam(updatedTeam);
-      setMembers((prevMembers) => [...prevMembers, userHandle]);
-      setAllUsers((prevUsers) =>
-        prevUsers.filter((user) => user.handle !== userHandle)
-      );
+      await addMemberToTeam(teamId, userHandle);
+      setAllUsers((prevUsers) => prevUsers.filter((user) => user.handle !== userHandle));
     } catch (error) {
       console.error('Error adding member:', error);
     }
@@ -98,6 +95,16 @@ export const TeamDetails = () => {
 
   const handleLeaveTeam = async () => {
     try {
+      if (isOwner) {
+        const newOwnerHandle = team.members[1]; // First non-owner member
+        if (newOwnerHandle) {
+          await changeOwner(teamId, newOwnerHandle);
+        } else {
+          await deleteTeam(teamId);
+          navigate('/teams');
+          return;
+        }
+      }
       await leaveTeam(teamId, userHandle);
       navigate('/teams');
     } catch (error) {
@@ -108,8 +115,7 @@ export const TeamDetails = () => {
   const handleChangeOwner = async (newOwnerHandle) => {
     if (!isOwner) return;
     try {
-      const updatedTeam = await changeOwner(teamId, newOwnerHandle);
-      setTeam(updatedTeam);
+      await changeOwner(teamId, newOwnerHandle);
     } catch (error) {
       console.error('Error changing owner:', error);
     }

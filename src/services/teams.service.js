@@ -166,23 +166,56 @@ export const getTeamById = async (teamId) => {
   
   
 
-export const changeOwner = async (teamId, newOwnerHandle) => {
-  const teamRef = ref(db, `teams/${teamId}`);
-  const teamSnapshot = await get(teamRef);
-
-  if (!teamSnapshot.exists()) {
-    throw new Error('Team not found');
-  }
-
-  const teamData = teamSnapshot.val();
+  export const changeOwner = async (teamId, newOwnerHandle) => {
+    try {
+      const teamRef = ref(db, `teams/${teamId}`);
+      const teamSnapshot = await get(teamRef);
   
-  if (!teamData.members.includes(newOwnerHandle)) {
-    throw new Error('New owner must be a member of the team');
-  }
+      if (!teamSnapshot.exists()) {
+        throw new Error('Team not found');
+      }
+  
+      const teamData = teamSnapshot.val();
+  
+      if (!teamData.members.includes(newOwnerHandle)) {
+        throw new Error('New owner must be a member of the team');
+      }
+  
+      if (teamData.owner === newOwnerHandle) {
+        throw new Error('New owner is already the current owner');
+      }
 
-  await update(teamRef, { owner: newOwnerHandle });
+      await update(teamRef, { owner: newOwnerHandle });
+  
+      return { ...teamData, owner: newOwnerHandle };
+    } catch (error) {
+      console.error("Error changing owner:", error);
+      throw error;
+    }
+  };
 
-  return { ...teamData, owner: newOwnerHandle };
-};
 
+  export const deleteTeam = async (teamId) => {
+    try {
+      const teamRef = ref(db, `teams/${teamId}`);
+      const teamSnapshot = await get(teamRef);
+      if (!teamSnapshot.exists()) {
+        throw new Error("Team not found");
+      }
+  
+      const teamData = teamSnapshot.val();
 
+      if (teamData.members && teamData.members.length > 0) {
+        for (const memberHandle of teamData.members) {
+          const userTeamRef = ref(db, `users/${memberHandle}/teams/${teamId}`);
+          await remove(userTeamRef);
+        }
+      }
+      await remove(teamRef);
+  
+      console.log("Team deleted successfully");
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      throw error;
+    }
+  };
