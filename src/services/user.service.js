@@ -287,12 +287,12 @@ export const searchUsers = async (searchTerm) => {
 export const setUserOnlineStatus = async (handle) => {
     const userRef = ref(db, `users/${handle}`);
     await update(userRef, { isOnline: true });
-  };
+};
 
 export const setUserOfflineStatus = async (handle) => {
     const userRef = ref(db, `users/${handle}`);
     await update(userRef, { isOnline: false });
-  }
+        }
   export const getFriends = async (userId) => {
     try {
       const userRef = ref(db, `users/${userId}`);

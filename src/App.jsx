@@ -37,13 +37,13 @@ function App() {
           getUserData(user.uid, (data) => {
             if (data) {
               const userData = data[Object.keys(data)[0]];
-                    setUserOnlineStatus(userData.handle);
-                    setAppState({
-                        user: user,
-                        userData, 
-                    });
-                }
-            });
+              setUserOnlineStatus(userData.handle);
+              setAppState({
+                user: user,
+                userData,
+              });
+            }
+          });
         }
       }, [user, setAppState]);
 

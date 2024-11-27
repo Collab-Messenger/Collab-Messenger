@@ -22,7 +22,8 @@ const Header = () => {
             const initialTwo = lastNameI.map(name => name[0]).join('');
             setNameInitials (initialOne.toUpperCase() + initialTwo.toUpperCase());
         } else{
-            setNameInitials (userData?.handle[0].toUpperCase());
+            const firstHandleSymbol = userData?.handle[0].toUpperCase();
+            setNameInitials (firstHandleSymbol);
 
         }
     }, [userData]);
@@ -32,19 +33,19 @@ const Header = () => {
     const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
     const userStatusOffline = () => setUserOfflineStatus(userData?.handle);
 
-    const getUserInitials = (userData) => {
-        if (userData.firstName) {
-            const firstNameI = userData.firstName.split(' ');
-            const lastNameI = userData.lastName.split(' ');
-            const initialOne = firstNameI.map(name => name[0]).join('');
-            const initialTwo = lastNameI.map(name => name[0]).join('');
-            return (initialOne.toUpperCase() + initialTwo.toUpperCase());
-        } else{
-            console.log(userData.handle[0].toUpperCase());
-            return userData.handle[0].toUpperCase();
+    //const getUserInitials = (userData) => {
+    //    if (userData.firstName) {
+    //        const firstNameI = userData.firstName.split(' ');
+    //        const lastNameI = userData.lastName.split(' ');
+    //        const initialOne = firstNameI.map(name => name[0]).join('');
+    //        const initialTwo = lastNameI.map(name => name[0]).join('');
+    //        return (initialOne.toUpperCase() + initialTwo.toUpperCase());
+    //    } else{
+    //        console.log(userData.handle[0].toUpperCase());
+    //        return userData.handle[0].toUpperCase();
 
-        }
-    };
+    //    }
+    //};
 
     const handleLogout = async () => {
         try {
