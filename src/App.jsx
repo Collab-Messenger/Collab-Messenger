@@ -34,9 +34,9 @@ function App() {
 
     useEffect(() => {
         if (user) {
-            getUserData(user.uid).then(snapshot => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val()[Object.keys(snapshot.val())[0]];
+          getUserData(user.uid, (data) => {
+            if (data) {
+              const userData = data[Object.keys(data)[0]];
                     setUserOnlineStatus(userData.handle);
                     setAppState({
                         user: user,
@@ -45,7 +45,7 @@ function App() {
                 }
             });
         }
-    }, [user]);
+      }, [user, setAppState]);
 
     return (
         <>

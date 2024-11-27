@@ -31,7 +31,6 @@ export function Login() {
     try {
       const credentials = await loginUser(form.email, form.password);
       setUserOnlineStatus(credentials.user.handle);
-      console.log(credentials);
       setAppState({
         user: credentials.user,
       });
