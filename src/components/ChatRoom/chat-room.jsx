@@ -1,39 +1,33 @@
+
 import React, { useState } from "react";
-import { addChatRoom,isChatRoomNameUnique } from "../../services/chat.service";
+import { addChatRoom } from "../../services/chat.service"; // Assuming the service for creating chat rooms
 
-
-//Creation form for chats
-const CreateChatRoom = () => {
-  const [roomName, setRoomName] = useState("");
-  const [description, setDescription] = useState("");
-  const [feedback, setFeedback] = useState("");
+const CreateChatRoom = ({ currentUserId, friendId, onChatCreated }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFeedback("");
     setIsLoading(true);
+    setFeedback("");
 
     try {
-      // Check if the room name is unique
-      const isUnique = await isChatRoomNameUnique(roomName);
-      if (!isUnique) {
-        setFeedback("Chat room name already exists. Please choose another.");
-        setIsLoading(false);
-        return;
-      }
+      // Generate a unique room name based on user IDs or handles
+      const roomName = `${currentUserId}-${friendId}`;
 
-      // Create the chat room
+      // Create the chat room with both users as members
       const newChatRoom = {
         name: roomName,
-        description,
-        members: [], // Initially empty; members can be added later
+        members: [currentUserId, friendId],
       };
 
+      // Call the service to create the chat room
       const chatRoomId = await addChatRoom(newChatRoom);
-      setFeedback(`Chat room "${roomName}" created successfully! Room ID: ${chatRoomId}`);
-      setRoomName("");
-      setDescription("");
+
+      // Callback to notify parent that the chat room was created
+      onChatCreated(chatRoomId);
+
+      setFeedback(`Chat room created successfully!`);
     } catch (error) {
       setFeedback("An error occurred while creating the chat room.");
       console.error(error.message);
@@ -43,40 +37,15 @@ const CreateChatRoom = () => {
   };
 
   return (
-    <div className="create-chat-room">
-      <h2>Create a New Chat Room</h2>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
-          <label htmlFor="roomName">Room Name:</label>
-          <input
-            type="text"
-            id="roomName"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
-            placeholder="Enter chat room name"
-            required
-            className="input input-bordered w-full max-w-xs"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="description">Description:</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter chat room description"
-            className="textarea textarea-bordered w-full max-w-xs"
-          />
-        </div>
-        <button
-          type="submit"
-          className={`btn btn-primary ${isLoading ? "loading" : ""}`}
-          disabled={isLoading}
-        >
-          {isLoading ? "Creating..." : "Create Chat Room"}
-        </button>
-      </form>
-      {feedback && <p className="feedback">{feedback}</p>}
+    <div>
+      <button
+        onClick={handleSubmit}
+        disabled={isLoading}
+        className={`btn btn-primary ${isLoading ? "loading" : ""}`}
+      >
+        {isLoading ? "Creating..." : "Start Chat"}
+      </button>
+      {feedback && <p>{feedback}</p>}
     </div>
   );
 };

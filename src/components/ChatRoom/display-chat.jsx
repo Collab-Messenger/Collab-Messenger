@@ -2,20 +2,24 @@ import React, { useContext, useEffect, useState } from "react";
 import { getMessages, sendMessage } from "../../services/chat.service";
 import { AppContext } from "../../store/app-context";
 
-const ChatRoom = ({ messages, chatRoomId }) => {
+const ChatRoom = ({ chatRoomId }) => {
   const [newMessage, setNewMessage] = useState("");
-  const [allMessages,setMessages] = useState([])
-  const {userData} = useContext(AppContext)
-  // console.log(userData);
-  // console.log("messagesFromDB",allMessages)
-  // console.log("messagesAllR",allMessagesReversed)
+  const [allMessages, setMessages] = useState([]);
+  const { userData } = useContext(AppContext);
+
+  useEffect(() => {
+    // Fetch messages when the chatRoomId changes
+    getMessages(chatRoomId).then((messages) => {
+      setMessages(messages);
+    });
+  }, [chatRoomId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
-        sender: userData.handle, // Replace with actual user ID
+        sender: userData.handle,
         timestamp: new Date().toISOString(),
       };
       await sendMessage(chatRoomId, message);
@@ -23,24 +27,17 @@ const ChatRoom = ({ messages, chatRoomId }) => {
     }
   };
 
-  useEffect(()=>{
-    getMessages(chatRoomId).then(setMessages)
-
-  },[messages])
-
-  const allMessagesReversed = Object.values(allMessages);
-
   return (
     <div className="chat-room">
       <h2>Chat Room</h2>
       <div className="messages">
-        {allMessagesReversed.length === 0 ? (
+        {allMessages.length === 0 ? (
           <p>No messages yet. Start the conversation!</p>
         ) : (
-          allMessagesReversed?.map((msg, index) => (
+          allMessages.map((msg, index) => (
             <div
               key={index}
-              className={`message ${msg.sender === "currentUserId" ? "sent" : "received"}`}
+              className={`message ${msg.sender === userData.handle ? "sent" : "received"}`}
             >
               <p>{msg.text}</p>
               <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
@@ -56,7 +53,9 @@ const ChatRoom = ({ messages, chatRoomId }) => {
           onChange={(e) => setNewMessage(e.target.value)}
           className="input input-bordered"
         />
-        <button type="submit" className="btn btn-primary">Send</button>
+        <button type="submit" className="btn btn-primary">
+          Send
+        </button>
       </form>
     </div>
   );
