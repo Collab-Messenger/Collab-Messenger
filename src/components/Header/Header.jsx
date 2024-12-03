@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../store/app-context';
 import { useContext } from 'react';
@@ -12,23 +12,40 @@ import { IoNotifications } from "react-icons/io5";
 const Header = () => {
     const navigate = useNavigate();
     const { userData, setAppState } = useContext(AppContext);
+    const [ nameInitials, setNameInitials ] = useState('');
 
+    useEffect(() => {
+        if (userData?.firstName) {
+            const firstNameI = userData?.firstName.split(' ');
+            const lastNameI = userData?.lastName.split(' ');
+            const initialOne = firstNameI.map(name => name[0]).join('');
+            const initialTwo = lastNameI.map(name => name[0]).join('');
+            setNameInitials (initialOne.toUpperCase() + initialTwo.toUpperCase());
+        } else{
+            const firstHandleSymbol = userData?.handle[0].toUpperCase();
+            setNameInitials (firstHandleSymbol);
+
+        }
+    }, [userData]);
+
+    console.log(nameInitials);
 
     const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
     const userStatusOffline = () => setUserOfflineStatus(userData?.handle);
 
-    const getUserInitials = (userData) => {
-        if (userData.firstName) {
-            const firstNameI = userData.firstName.split(' ');
-            const lastNameI = userData.lastName.split(' ');
-            const initialOne = firstNameI.map(name => name[0]).join('');
-            const initialTwo = lastNameI.map(name => name[0]).join('');
-            return (initialOne.toUpperCase() + initialTwo.toUpperCase());
-        } else if (userData.handle) {
-            return userData.handle[0].toUpperCase();
-        }
-        return "User";
-    };
+    //const getUserInitials = (userData) => {
+    //    if (userData.firstName) {
+    //        const firstNameI = userData.firstName.split(' ');
+    //        const lastNameI = userData.lastName.split(' ');
+    //        const initialOne = firstNameI.map(name => name[0]).join('');
+    //        const initialTwo = lastNameI.map(name => name[0]).join('');
+    //        return (initialOne.toUpperCase() + initialTwo.toUpperCase());
+    //    } else{
+    //        console.log(userData.handle[0].toUpperCase());
+    //        return userData.handle[0].toUpperCase();
+
+    //    }
+    //};
 
     const handleLogout = async () => {
         try {
@@ -65,20 +82,15 @@ const Header = () => {
 
             <div className="flex gap-4 items-center relative mr-5">
                 {/* Profile Button */}
+                {userData? (
 
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className={`text-gray-900 btn btn-accent btn-circle avatar w-16 h-16 ${userData?.isOnline? "online" : "offline"}`}>
                         {/*<div className="w-10 rounded-full flex items-center justify-center">*/}
-                            {userData?.isOnline ? (
+                            {userData?.isOnline && (
                                 <div className="placeholder">
                                     <div className="rounded-full">
-                                        <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className=" placeholder">
-                                    <div className="rounded-full">
-                                        <span className="text-xl">{userData ? getUserInitials(userData) : 'User'}</span>
+                                        <span className="text-xl">{nameInitials}</span>
                                     </div>
                                 </div>
                             )}
@@ -114,6 +126,10 @@ const Header = () => {
                         )}
                     </ul>
                 </div>
+                ): <>
+                <NavLink to='/login'><li><a href="#item1">Log In</a></li></NavLink>
+                <NavLink to='/register'><li><a href="#item2">Register</a></li></NavLink>
+            </>}
                 <div className="indicator ">
                     <NavLink to='notifications'>
                     <IoNotifications size={20}/>

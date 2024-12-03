@@ -1,0 +1,22 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    margin: 0 auto; /* Center horizontally */
+}
+
+.platform-statistics {
+    font-size: 1.5rem;
+}
+
+.stats {
+    font-size: 1.2rem;
+}
+
+.caption {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}

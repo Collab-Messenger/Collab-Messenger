@@ -23,6 +23,7 @@ import { TeamsCreate } from './Views/TeamsCreate/TeamsCreate'
 import { VideoCallView } from './Views/VideoCall/VideoCallView'
 import ChatRoomList from './components/ChatRoom/chat-roomlist'
 import ChatRoomView from './Views/ChatRoomView/chat-room-view'
+import { Anonymous } from './Views/Anonymous/Anonymous'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -34,18 +35,18 @@ function App() {
 
     useEffect(() => {
         if (user) {
-            getUserData(user.uid).then(snapshot => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val()[Object.keys(snapshot.val())[0]];
-                    setUserOnlineStatus(userData.handle);
-                    setAppState({
-                        user: user,
-                        userData, 
-                    });
-                }
-            });
+          getUserData(user.uid, (data) => {
+            if (data) {
+              const userData = data[Object.keys(data)[0]];
+              setUserOnlineStatus(userData.handle);
+              setAppState({
+                user: user,
+                userData,
+              });
+            }
+          });
         }
-    }, [user]);
+      }, [user, setAppState]);
 
     return (
         <>
@@ -55,9 +56,11 @@ function App() {
                     <Header />
           <div className="flex gap-1 h-full">
             {/* Height = 100vh - headerHeight */}
-                    <Sidebar />
+              {appState.user && (
+                                <Sidebar />
+                            )}
                             <Routes>
-                                <Route path="/" element={<Home />} />
+                            <Route path="/" element={appState.user ? <Home /> : <Anonymous />} />
                                 <Route path="*" element={<NotFound />} />
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/login" element={<Login />} />
