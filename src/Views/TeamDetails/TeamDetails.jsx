@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ref, onValue, off } from 'firebase/database';
-import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam, changeOwner, deleteTeam } from '../../services/teams.service.js';
+import { ref, onValue, off, update, get, push, set } from 'firebase/database';
+import {
+  getTeamById,
+  removeMemberFromTeam,
+  addMemberToTeam,
+  leaveTeam,
+  changeOwner,
+  deleteTeam,
+  addChannelToTeam,
+} from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
 import { db } from '../../config/firebase-config';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
+import { CreateChatRoom } from '../../components/ChatRoom/chat-room.jsx';
+import { addChatRoom } from '../../services/chat.service.js';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
@@ -16,6 +26,7 @@ export const TeamDetails = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [userHandle, setUserHandle] = useState(null);
+  const [showCreateChannelForm, setShowCreateChannelForm] = useState(false);
 
   useEffect(() => {
     if (!user || !user.uid) {
@@ -121,6 +132,37 @@ export const TeamDetails = () => {
     }
   };
 
+  const handleCreateChannel = async (channelName, description) => {
+    try {
+      // Prepare data
+      const channelData = {
+        name: channelName,
+        description,
+        createdOn: new Date().toISOString(),
+      };
+
+      // Reference paths
+      const teamChannelRef = ref(db, `teams/${teamId}/channels`);
+      const newChannelRef = push(teamChannelRef);  // Create new channel using push for unique ID
+      const chatRoomRef = push(ref(db, "chatRooms"));
+
+      // Run both updates
+      await Promise.all([
+        set(newChannelRef, channelData),  // Store new channel in team
+        set(chatRoomRef, { ...channelData, members: team?.members || [] }),  // Create chat room
+      ]);
+
+      // Fetch updated team state
+      const snapshot = await get(ref(db, `teams/${teamId}`));
+      setTeam(snapshot.val());
+      setShowCreateChannelForm(false);
+
+      console.log("Channel added successfully to both team and chatRooms!");
+    } catch (error) {
+      console.error("Error creating channel:", error);
+    }
+  };
+
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
@@ -147,9 +189,7 @@ export const TeamDetails = () => {
                 )}
 
                 {isOwner && handle !== userHandle && (
-                  <button onClick={() => handleChangeOwner(handle)}>
-                    Change Owner
-                  </button>
+                  <button onClick={() => handleChangeOwner(handle)}>Change Owner</button>
                 )}
               </div>
             ))}
@@ -180,6 +220,17 @@ export const TeamDetails = () => {
       )}
 
       <button onClick={handleLeaveTeam}>Leave Team</button>
+
+      {isOwner && !showCreateChannelForm && (
+        <button onClick={() => setShowCreateChannelForm(true)}>Create Channel</button>
+      )}
+
+      {showCreateChannelForm && (
+        <CreateChatRoom
+          onSubmit={handleCreateChannel}
+          title="Channel"
+        />
+      )}
     </div>
   );
 };
