@@ -3,7 +3,7 @@ import { AppContext } from "../../store/app-context";
 import { removeFriend } from "../../services/user.service";
 //import { removeFriend } from "../../services/user.service";
 import { getChatRoomById } from "../../services/chat.service";
-import { createChatRoom } from "../../components/ChatRoom/create-chatroom";
+import CreateChatRoom from "../../components/ChatRoom/create-chatroom";
 import ChatRoom from "../../components/ChatRoom/display-chat";
 
 export const Friends = () => {

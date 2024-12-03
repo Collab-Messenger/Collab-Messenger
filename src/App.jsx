@@ -15,7 +15,7 @@ import { Profile } from './Views/Profile/Profile'
 import { Teams } from './Views/Teams/Teams'
 import { Notifications } from './Views/Notifications/Notifications'
 import Home from './Views/Home/Home'
-import { createChatRoom } from './components/ChatRoom/create-chatroom'
+import CreateChatRoom from './components/ChatRoom/create-chatroom'
 import { Friends } from './Views/Friends/Friends'
 import { Admin } from './Views/Admin/Admin'
 import { TeamDetails } from './Views/TeamDetails/TeamDetails'
@@ -74,7 +74,7 @@ function App() {
                                 <Route path='/teams/:teamId' element={<TeamDetails/>}/>
                                 <Route path='/videoCall' element={<VideoCallView/>}/>
                                 <Route path='notifications' element={<Notifications/>}/>
-                                <Route path='createChatRoom' element={<createChatRoom/>}/>
+                                <Route path='createChatRoom' element={<CreateChatRoom/>}/>
                                 <Route path='chatRoomList' element={<ChatRoomList/>}/>
                                 <Route path='/chatRooms/:id' element={<ChatRoomView/>}/>
                                 

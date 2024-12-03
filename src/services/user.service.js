@@ -53,8 +53,15 @@ export const createUserHandle = async (handle, uid, email) => {
  * @param {string} uid - The UID of the user.
  * @returns {Promise<Object>}
  */
-export const getUserData = async (uid) => {
-  return get(query(ref(db, 'users'), orderByChild('uid'), equalTo(uid)));
+export const getUserData = (uid, callback) => {
+  const userQuery = query(ref(db, 'users'), orderByChild('uid'), equalTo(uid));
+  onValue(userQuery, (snapshot) => {
+      if (snapshot.exists()) {
+          callback(snapshot.val());
+      } else {
+          callback(null);
+      }
+  });
 };
 
 /**

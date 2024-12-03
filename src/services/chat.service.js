@@ -159,3 +159,23 @@ export const sendMessage = async (chatRoomId, message) => {
   }
 };
 
+
+export const createChatRoom = async (userHandle, friendHandle) => {
+  try {
+    const newChatRoomRef = push(ref(db, "chatRooms"));
+    const newChatRoom = {
+      name: `ChatRoom between ${userHandle} and ${friendHandle}`,
+      createdOn: serverTimestamp(),
+      description: "",
+      messages: {},
+    };
+    await set(newChatRoomRef, newChatRoom);
+    return {
+      id: newChatRoomRef.key,
+      ...newChatRoom,
+    };
+  } catch (error) {
+    console.error("Error creating chat room:", error.message);
+    throw error;
+  }
+};
