@@ -8,13 +8,11 @@ import {
   leaveTeam,
   changeOwner,
   deleteTeam,
-  addChannelToTeam,
 } from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
 import { db } from '../../config/firebase-config';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
-import { CreateChatRoom } from '../../components/ChatRoom/chat-room.jsx';
-import { addChatRoom } from '../../services/chat.service.js';
+import CreateChannel from '../../components/CreateChannel/CreateChannel.jsx';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
@@ -132,34 +130,21 @@ export const TeamDetails = () => {
     }
   };
 
-  const handleCreateChannel = async (channelName, description) => {
+  const handleCreateChannel = async (channelData) => {
     try {
-      // Prepare data
-      const channelData = {
-        name: channelName,
-        description,
-        createdOn: new Date().toISOString(),
-      };
-
-      // Reference paths
-      const teamChannelRef = ref(db, `teams/${teamId}/channels`);
-      const newChannelRef = push(teamChannelRef);  // Create new channel using push for unique ID
-      const chatRoomRef = push(ref(db, "chatRooms"));
-
-      // Run both updates
-      await Promise.all([
-        set(newChannelRef, channelData),  // Store new channel in team
-        set(chatRoomRef, { ...channelData, members: team?.members || [] }),  // Create chat room
-      ]);
-
-      // Fetch updated team state
+      const teamChannelRef = ref(db, `teams/${teamId}/channels`); // Reference for channels under the team
+      const newChannelRef = push(teamChannelRef); // Generate unique channel ID
+  
+      await set(newChannelRef, channelData); // Add channel to the team
+  
+      // Fetch the updated team state to reflect the new channel
       const snapshot = await get(ref(db, `teams/${teamId}`));
       setTeam(snapshot.val());
       setShowCreateChannelForm(false);
-
-      console.log("Channel added successfully to both team and chatRooms!");
+  
+      console.log('Channel added successfully to the team!');
     } catch (error) {
-      console.error("Error creating channel:", error);
+      console.error('Error creating channel:', error);
     }
   };
 
@@ -226,8 +211,8 @@ export const TeamDetails = () => {
       )}
 
       {showCreateChannelForm && (
-        <CreateChatRoom
-          onSubmit={handleCreateChannel}
+        <CreateChannel
+          onChannelCreated={handleCreateChannel} // Pass the correct prop
           title="Channel"
         />
       )}
