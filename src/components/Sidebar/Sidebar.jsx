@@ -1,6 +1,6 @@
 import { ToggleMode } from "../ToggleMode/ToggleMode";
 import styles from "./Sidebar.module.css";
-import CreateChatRoom from "../ChatRoom/chat-room";
+import { createChatRoom } from "../ChatRoom/create-chatroom";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {

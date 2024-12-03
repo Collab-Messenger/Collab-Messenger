@@ -53,15 +53,8 @@ export const createUserHandle = async (handle, uid, email) => {
  * @param {string} uid - The UID of the user.
  * @returns {Promise<Object>}
  */
-export const getUserData = (uid, callback) => {
-    const userQuery = query(ref(db, 'users'), orderByChild('uid'), equalTo(uid));
-    onValue(userQuery, (snapshot) => {
-        if (snapshot.exists()) {
-            callback(snapshot.val());
-        } else {
-            callback(null);
-        }
-    });
+export const getUserData = async (uid) => {
+  return get(query(ref(db, 'users'), orderByChild('uid'), equalTo(uid)));
 };
 
 /**
@@ -287,12 +280,12 @@ export const searchUsers = async (searchTerm) => {
 export const setUserOnlineStatus = async (handle) => {
     const userRef = ref(db, `users/${handle}`);
     await update(userRef, { isOnline: true });
-};
+  };
 
 export const setUserOfflineStatus = async (handle) => {
     const userRef = ref(db, `users/${handle}`);
     await update(userRef, { isOnline: false });
-        }
+  }
   export const getFriends = async (userId) => {
     try {
       const userRef = ref(db, `users/${userId}`);

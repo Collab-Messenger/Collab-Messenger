@@ -2,16 +2,22 @@ import React, { useContext, useEffect, useState } from "react";
 import { getMessages, sendMessage } from "../../services/chat.service";
 import { AppContext } from "../../store/app-context";
 
-const ChatRoom = ({ chatRoomId }) => {
+const ChatRoom = ({ chatRoomId, onBack }) => {
   const [newMessage, setNewMessage] = useState("");
   const [allMessages, setMessages] = useState([]);
   const { userData } = useContext(AppContext);
 
   useEffect(() => {
-    // Fetch messages when the chatRoomId changes
-    getMessages(chatRoomId).then((messages) => {
-      setMessages(messages);
-    });
+    const fetchMessages = async () => {
+      const messages = await getMessages(chatRoomId);
+      setMessages(messages); // Update state with fetched messages
+    };
+
+    fetchMessages();
+
+    // Optional: Add real-time updates with `onValue`
+    // return unsubscribe function if using listeners
+
   }, [chatRoomId]);
 
   const handleSendMessage = async (e) => {
@@ -24,19 +30,26 @@ const ChatRoom = ({ chatRoomId }) => {
       };
       await sendMessage(chatRoomId, message);
       setNewMessage(""); // Clear input field
+
+      // Fetch the updated messages (or rely on real-time updates)
+      const updatedMessages = await getMessages(chatRoomId);
+      setMessages(updatedMessages);
     }
   };
 
   return (
     <div className="chat-room">
+      <button onClick={onBack} className="btn btn-secondary">
+        Back
+      </button>
       <h2>Chat Room</h2>
       <div className="messages">
         {allMessages.length === 0 ? (
           <p>No messages yet. Start the conversation!</p>
         ) : (
-          allMessages.map((msg, index) => (
+          allMessages.map((msg) => (
             <div
-              key={index}
+              key={msg.id}
               className={`message ${msg.sender === userData.handle ? "sent" : "received"}`}
             >
               <p>{msg.text}</p>

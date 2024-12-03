@@ -119,22 +119,43 @@ export const getAllChatRooms = async () => {
 // };
 
 export const getMessages = async (chatRoomId) => {
-  const messagesSnapshot = await get(ref(db,`chatRooms/${chatRoomId}/messages`));
-  const messages = messagesSnapshot.val()
-  if(!messagesSnapshot.exists()) {
-    return [];
-  }
-  console.log("Service Messages",messages)
-  return messages
-}
+  try {
+    const messagesSnapshot = await get(ref(db, `chatRooms/${chatRoomId}/messages`));
 
-// Send a message
-export const sendMessage = async (chatRoomId, message) => {
-  const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
-  const newMessageRef = push(messagesRef);
-  await set(newMessageRef, {
-    text: message.text,
-    sender: message.sender,
-    timestamp: new Date().toISOString(),
-  });
+    if (!messagesSnapshot.exists()) {
+      return []; // Return an empty array if no messages exist
+    }
+
+    const messagesObject = messagesSnapshot.val();
+    console.log("Service Messages:", messagesObject);
+
+    // Convert messages object into an array with Firebase keys
+    return Object.entries(messagesObject).map(([key, value]) => ({
+      id: key, // Include Firebase key for possible use in the UI
+      ...value,
+    }));
+  } catch (error) {
+    console.error("Error retrieving messages:", error.message);
+    return []; // Return empty array on error
+  }
 };
+
+
+export const sendMessage = async (chatRoomId, message) => {
+  try {
+    const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
+    const newMessageRef = push(messagesRef);
+
+    await set(newMessageRef, {
+      text: message.text,
+      sender: message.sender,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log("Message sent:", message);
+  } catch (error) {
+    console.error("Error sending message:", error.message);
+    throw error; // Rethrow error to handle it in the component
+  }
+};
+
