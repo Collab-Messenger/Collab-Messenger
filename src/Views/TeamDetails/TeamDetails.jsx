@@ -135,19 +135,30 @@ export const TeamDetails = () => {
       const teamChannelRef = ref(db, `teams/${teamId}/channels`); // Reference for channels under the team
       const newChannelRef = push(teamChannelRef); // Generate unique channel ID
   
-      await set(newChannelRef, channelData); // Add channel to the team
+      // Fetch the team members
+      const teamMembersRef = ref(db, `teams/${teamId}/members`);
+      const teamMembersSnapshot = await get(teamMembersRef);
+      const teamMembers = teamMembersSnapshot.exists() ? teamMembersSnapshot.val() : [];
+  
+      // Add the members to the channel data
+      const fullChannelData = {
+        ...channelData,
+        members: teamMembers,  // Add the members to the new channel
+      };
+  
+      await set(newChannelRef, fullChannelData); // Add channel to the team
   
       // Fetch the updated team state to reflect the new channel
       const snapshot = await get(ref(db, `teams/${teamId}`));
       setTeam(snapshot.val());
       setShowCreateChannelForm(false);
   
-      console.log('Channel added successfully to the team!');
+      console.log('Channel added successfully to the team with members!');
     } catch (error) {
       console.error('Error creating channel:', error);
     }
   };
-
+  
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }

@@ -9,31 +9,36 @@ const CreateChannel = ({ onChannelCreated }) => {
   const handleCreateChannel = async (e) => {
     e.preventDefault();
 
+    // Ensure channel name is provided
     if (!channelName.trim()) {
       setError("Channel name is required.");
       return;
     }
 
+    // Prepare the channel data
+    const channelData = {
+      name: channelName.trim(),
+      description: description.trim(),
+      createdOn: new Date().toISOString(),
+    };
+
+    console.log("Creating channel with data:", channelData); // Log the data before sending
+
     try {
       setLoading(true);
-      setError("");
+      setError(""); // Clear any previous errors
 
-      const channelData = {
-        name: channelName.trim(),
-        description: description.trim(),
-        createdOn: new Date().toISOString(),
-      };
-
-      const newChannel = await onChannelCreated(channelData);
+      // Call the function to create the channel and pass the channel data
+      const newChannel = await onChannelCreated(channelData); 
 
       if (newChannel) {
-        setChannelName("");
+        setChannelName(""); // Clear input fields
         setDescription("");
       } else {
         setError("Failed to create channel.");
       }
     } catch (error) {
-      setError("Error creating channel: " + error.message);
+      setError("Error creating channel: " + error.message); // Handle error and show to user
     } finally {
       setLoading(false);
     }
