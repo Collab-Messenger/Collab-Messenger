@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ref, onValue, off } from "firebase/database";
+import { ref, onValue, off, get, } from "firebase/database";
 import { db } from "../../config/firebase-config";
-import { sendMessageChannel, leaveChannel } from "../../services/channel.service";
+import { sendMessageChannel, leaveChannel, deleteChannel } from "../../services/channel.service";
 
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
@@ -80,6 +80,14 @@ const ChannelDetails = () => {
   const handleLeaveChannel = async () => {
     try {
       await leaveChannel(teamId, channelId, userData.handle);
+      const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
+      const membersSnapshot = await get(membersRef);
+      const updatedMembers = membersSnapshot.val() || [];
+
+      if (updatedMembers.length === 0) {
+        await deleteChannel(teamId, channelId);
+      }
+
       navigate("/teams");
     } catch (error) {
       console.error("Error leaving channel:", error);
@@ -117,10 +125,7 @@ const ChannelDetails = () => {
           <p>No messages yet. Start the conversation!</p>
         ) : (
           allMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className="message p-4 rounded-lg shadow"
-            >
+            <div key={msg.id} className="message p-4 rounded-lg shadow">
               <p>{msg.text}</p>
               <small className="text-sm text-gray-500">{new Date(msg.timestamp).toLocaleTimeString()}</small>
             </div>

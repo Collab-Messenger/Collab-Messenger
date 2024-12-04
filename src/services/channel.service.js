@@ -122,4 +122,41 @@ export const createChannel = async (teamId, channelData) => {
       throw error;
     }
   };
+
+
+
+  
+
+
+
+  
+  // Delete channel if there are no members left
+  export const deleteChannel = async (teamId, channelId) => {
+    try {
+      const channelRef = ref(db, `teams/${teamId}/channels/${channelId}`);
+      const channelSnapshot = await get(channelRef);
+  
+      if (channelSnapshot.exists()) {
+        const channelData = channelSnapshot.val();
+        console.log(`Checking channel ${channelId}:`, channelData);
+        const members = channelData.members || [];
+
+        console.log(`Channel ${channelId} members count: ${members.length}`);
+
+        if (members.length === 0) {
+          await remove(channelRef);
+          console.log(`Channel ${channelId} deleted successfully.`);
+        } else {
+          console.log(`Channel ${channelId} still has members and cannot be deleted.`);
+        }
+      } else {
+        console.error(`Channel ${channelId} not found.`);
+      }
+    } catch (error) {
+      console.error("Error deleting channel:", error);
+      throw error;
+    }
+  };
+  
+  
   

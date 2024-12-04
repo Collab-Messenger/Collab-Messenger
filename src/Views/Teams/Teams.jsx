@@ -85,7 +85,8 @@ export const Teams = () => {
                 {team.name} 
               </h2>
               <div className="channels">
-                {Object.entries(team.channels).length > 0 ? (
+               
+                {team.channels && Object.entries(team.channels).length > 0 ? (
                   Object.entries(team.channels).map(([channelId, channelData]) => (
                     <div
                       key={channelId}
