@@ -12,7 +12,7 @@ export function TeamsCreate() {
   const [team, setTeam] = useState({
     id: '',
     name: '',
-    members: '',
+    members: [],
     owner: null,
     channels: []
   });

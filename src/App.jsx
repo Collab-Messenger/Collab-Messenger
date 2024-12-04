@@ -24,6 +24,7 @@ import { VideoCallView } from './Views/VideoCall/VideoCallView'
 import ChatRoomList from './components/ChatRoom/chat-roomlist'
 import ChatRoomView from './Views/ChatRoomView/chat-room-view'
 import { Anonymous } from './Views/Anonymous/Anonymous'
+import ChannelDetails from './components/ChannelDetails/ChannelDetails'
 
 function App() {
     const [appState, setAppState] = useState({
@@ -77,6 +78,7 @@ function App() {
                                 <Route path='createChatRoom' element={<CreateChatRoom/>}/>
                                 <Route path='chatRoomList' element={<ChatRoomList/>}/>
                                 <Route path='/chatRooms/:id' element={<ChatRoomView/>}/>
+                                <Route path='/teams/:teamId/channels/:channelId/' element={<ChannelDetails/>}/>
                                 
                             </Routes>
                         </div>

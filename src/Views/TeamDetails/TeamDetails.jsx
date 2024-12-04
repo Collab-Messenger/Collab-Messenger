@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ref, onValue, off } from 'firebase/database';
-import { getTeamById, removeMemberFromTeam, addMemberToTeam, leaveTeam, changeOwner, deleteTeam } from '../../services/teams.service.js';
+import { ref, onValue, off, update, get, push, set } from 'firebase/database';
+import {
+  getTeamById,
+  removeMemberFromTeam,
+  addMemberToTeam,
+  leaveTeam,
+  changeOwner,
+  deleteTeam,
+} from '../../services/teams.service.js';
 import { AppContext } from '../../store/app-context.js';
 import { db } from '../../config/firebase-config';
 import { getAllUsers, getUserByUid } from '../../services/user.service.js';
+import CreateChannel from '../../components/CreateChannel/CreateChannel.jsx';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
@@ -16,6 +24,7 @@ export const TeamDetails = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [userHandle, setUserHandle] = useState(null);
+  const [showCreateChannelForm, setShowCreateChannelForm] = useState(false);
 
   useEffect(() => {
     if (!user || !user.uid) {
@@ -121,6 +130,35 @@ export const TeamDetails = () => {
     }
   };
 
+  const handleCreateChannel = async (channelData) => {
+    try {
+      const teamChannelRef = ref(db, `teams/${teamId}/channels`); // Reference for channels under the team
+      const newChannelRef = push(teamChannelRef); // Generate unique channel ID
+  
+      // Fetch the team members
+      const teamMembersRef = ref(db, `teams/${teamId}/members`);
+      const teamMembersSnapshot = await get(teamMembersRef);
+      const teamMembers = teamMembersSnapshot.exists() ? teamMembersSnapshot.val() : [];
+  
+      // Add the members to the channel data
+      const fullChannelData = {
+        ...channelData,
+        members: teamMembers,  // Add the members to the new channel
+      };
+  
+      await set(newChannelRef, fullChannelData); // Add channel to the team
+  
+      // Fetch the updated team state to reflect the new channel
+      const snapshot = await get(ref(db, `teams/${teamId}`));
+      setTeam(snapshot.val());
+      setShowCreateChannelForm(false);
+  
+      console.log('Channel added successfully to the team with members!');
+    } catch (error) {
+      console.error('Error creating channel:', error);
+    }
+  };
+  
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
@@ -147,9 +185,7 @@ export const TeamDetails = () => {
                 )}
 
                 {isOwner && handle !== userHandle && (
-                  <button onClick={() => handleChangeOwner(handle)}>
-                    Change Owner
-                  </button>
+                  <button onClick={() => handleChangeOwner(handle)}>Change Owner</button>
                 )}
               </div>
             ))}
@@ -180,6 +216,17 @@ export const TeamDetails = () => {
       )}
 
       <button onClick={handleLeaveTeam}>Leave Team</button>
+
+      {isOwner && !showCreateChannelForm && (
+        <button onClick={() => setShowCreateChannelForm(true)}>Create Channel</button>
+      )}
+
+      {showCreateChannelForm && (
+        <CreateChannel
+          onChannelCreated={handleCreateChannel} // Pass the correct prop
+          title="Channel"
+        />
+      )}
     </div>
   );
 };
