@@ -13,19 +13,42 @@ export const Teams = () => {
   useEffect(() => {
     const fetchUserAndTeams = async () => {
       if (user) {
-        const userData = await getUserByUid(user.uid);
-        if (userData && userData.handle) {
-          setUserHandle(userData.handle);
+        try {
+          const userData = await getUserByUid(user.uid);
+          if (userData && userData.handle) {
+            setUserHandle(userData.handle);
 
-          // Fetch teams data with proper structure
-          const teamsData = await getTeams(userData.handle);
-          console.log("Fetched Teams:", teamsData);
+            const teamsData = await getTeams(userData.handle);
 
-          // If teamsData is in a format like { teamId: {name: "Team1", ...}, ... }
-          // You might need to modify the structure of teamsData based on your database
-          setTeams(teamsData || []);
-        } else {
-          console.error("User handle is missing or undefined.");
+            const userTeams = Object.values(teamsData).filter(team =>
+              team.members && team.members.includes(userData.handle)
+            );
+
+            const filteredTeams = userTeams.map(team => {
+              if (team.channels) {
+                const filteredChannels = Object.entries(team.channels).filter(([channelId, channelData]) => {
+                  return channelData.members && channelData.members.includes(userData.handle);
+                });
+
+                return {
+                  ...team,
+                  channels: filteredChannels.reduce((acc, [channelId, channelData]) => {
+                    acc[channelId] = channelData;
+                    return acc;
+                  }, {}),
+                };
+              }
+              return team;
+            });
+
+            console.log("Filtered Teams with Channels:", filteredTeams);
+
+            setTeams(filteredTeams || []);
+          } else {
+            console.error("User handle is missing or undefined.");
+          }
+        } catch (error) {
+          console.error("Error fetching user or teams:", error);
         }
       }
     };
@@ -59,17 +82,17 @@ export const Teams = () => {
           {teams.map((team) => (
             <div key={team.id} className="team">
               <h2 onClick={() => handleViewTeam(team.id)}>
-                {team.name} {/* Display the team name */}
+                {team.name} 
               </h2>
               <div className="channels">
-                {team.channels ? (
+                {Object.entries(team.channels).length > 0 ? (
                   Object.entries(team.channels).map(([channelId, channelData]) => (
                     <div
                       key={channelId}
                       className="channel"
                       onClick={() => handleViewChannel(team.id, channelId)}
                     >
-                      <h3>Channel: {channelData.name}</h3> {/* Display channel name */}
+                      <h3>Channel: {channelData.name}</h3>
                       <p>Description: {channelData.description}</p>
                     </div>
                   ))
