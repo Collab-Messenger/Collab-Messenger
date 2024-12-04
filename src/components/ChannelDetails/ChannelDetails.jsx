@@ -1,20 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../store/app-context";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ref, onValue, off } from "firebase/database";
 import { db } from "../../config/firebase-config";
-import { sendMessageChannel } from "../../services/channel.service";
+import { sendMessageChannel, leaveChannel } from "../../services/channel.service";
 
-const ChannelDetails = ({ onBack }) => {
-  const { teamId, channelId } = useParams(); // Get teamId and channelId from URL params
-  const { userData } = useContext(AppContext); // Get user data from context
-  const [newMessage, setNewMessage] = useState(""); // State for new message input
-  const [allMessages, setMessages] = useState([]); // State for storing messages
-  const [channelMembers, setChannelMembers] = useState([]); // State for channel members
-  const [loading, setLoading] = useState(true); // Loading state for messages
-  const [isUserDataLoaded, setIsUserDataLoaded] = useState(false); // To track if userData is loaded
+const ChannelDetails = () => {
+  const { teamId, channelId } = useParams();
+  const { userData } = useContext(AppContext);
+  const [newMessage, setNewMessage] = useState("");
+  const [allMessages, setMessages] = useState([]);
+  const [channelMembers, setChannelMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
+  const navigate = useNavigate();
 
-  // Fetch messages for the current channel when component mounts or channelId changes
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
 
@@ -25,83 +25,84 @@ const ChannelDetails = ({ onBack }) => {
           id,
           ...message,
         }));
-        setMessages(messagesArray); // Update the messages state
+        setMessages(messagesArray);
       }
-      setLoading(false); // Set loading to false after fetching messages
+      setLoading(false);
     });
 
-    // Cleanup listener when component unmounts or team/channel changes
     return () => {
       off(messagesRef);
     };
   }, [teamId, channelId]);
 
-  // Fetch channel members in real-time when component mounts or channelId changes
   useEffect(() => {
     const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
 
     const unsubscribe = onValue(membersRef, (snapshot) => {
       if (snapshot.exists()) {
-        setChannelMembers(snapshot.val()); // Update channel members state
+        setChannelMembers(snapshot.val());
       } else {
-        setChannelMembers([]); // No members
+        setChannelMembers([]);
       }
     });
 
-    // Cleanup listener when component unmounts or channel changes
     return () => {
       off(membersRef);
     };
   }, [teamId, channelId]);
 
-  // Ensure userData is loaded before allowing message sending
   useEffect(() => {
     if (userData) {
       setIsUserDataLoaded(true);
     }
   }, [userData]);
 
-  // Handle sending a new message
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    // Ensure userData and userData.handle are available before attempting to send a message
     if (!userData || !userData.handle) {
       console.error("User data is not available or handle is missing");
-      return; // Don't send the message if userData is not available
+      return;
     }
 
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
-        sender: userData.handle, // Use the logged-in user's handle
+        sender: userData.handle,
         timestamp: new Date().toISOString(),
       };
 
-      await sendMessageChannel(teamId, channelId, message); // Send message to Firebase under the specific channel
-      setNewMessage(""); // Clear the message input field
+      await sendMessageChannel(teamId, channelId, message);
+      setNewMessage("");
     }
   };
 
-  // Return a fallback UI if userData is still loading or missing
+  const handleLeaveChannel = async () => {
+    try {
+      await leaveChannel(teamId, channelId, userData.handle);
+      navigate("/teams");
+    } catch (error) {
+      console.error("Error leaving channel:", error);
+    }
+  };
+
   if (!isUserDataLoaded) {
-    return <div>Loading user data...</div>; // Show a loading state or redirect to login if needed
+    return <div>Loading user data...</div>;
   }
 
   return (
     <div className="chat-room">
-      <button onClick={onBack} className="btn btn-secondary mb-4">
+      <button onClick={() => navigate("/teams")} className="btn btn-secondary mb-4">
         Back
       </button>
       <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
 
-      {/* Display channel members */}
       <div className="channel-members mb-4">
         <h3 className="text-lg font-semibold">Members:</h3>
         {channelMembers.length > 0 ? (
           <ul className="list-disc list-inside">
             {channelMembers.map((member, index) => (
-              <li key={index}>{member}</li> // Replace with user-friendly display names if available
+              <li key={index}>{member}</li>
             ))}
           </ul>
         ) : (
@@ -109,7 +110,6 @@ const ChannelDetails = ({ onBack }) => {
         )}
       </div>
 
-      {/* Display messages */}
       <div className="messages space-y-4">
         {loading ? (
           <p>Loading messages...</p>
@@ -128,7 +128,6 @@ const ChannelDetails = ({ onBack }) => {
         )}
       </div>
 
-      {/* Message input form */}
       <form onSubmit={handleSendMessage} className="message-form mt-4 flex gap-2">
         <input
           type="text"
@@ -139,6 +138,12 @@ const ChannelDetails = ({ onBack }) => {
         />
         <button type="submit" className="btn btn-primary">Send</button>
       </form>
+
+      <div className="leave-channel mt-4">
+        <button onClick={handleLeaveChannel} className="btn btn-danger">
+          Leave Channel
+        </button>
+      </div>
     </div>
   );
 };
