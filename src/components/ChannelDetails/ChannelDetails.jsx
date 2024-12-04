@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ref, onValue, off, get, } from "firebase/database";
+import { ref, onValue, off, get, update } from "firebase/database";
 import { db } from "../../config/firebase-config";
 import { sendMessageChannel, leaveChannel, deleteChannel } from "../../services/channel.service";
 
@@ -12,6 +12,7 @@ const ChannelDetails = () => {
   const [allMessages, setMessages] = useState([]);
   const [channelMembers, setChannelMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingMessage, setEditingMessage] = useState(null);
   const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
   const navigate = useNavigate();
 
@@ -94,6 +95,24 @@ const ChannelDetails = () => {
     }
   };
 
+  const handleEditMessage = (msg) => {
+    setEditingMessage(msg);
+  };
+
+  const handleCancelEditing = () => {
+    setEditingMessage(null);
+  };
+
+  const handleSaveMessage = async (messageId) => {
+    try {
+      const messageRef = ref(db, `teams/${teamId}/channels/${channelId}/messages/${messageId}`);
+      await update(messageRef, { text: editingMessage.text });
+      setEditingMessage(null);
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  };
+
   if (!isUserDataLoaded) {
     return <div>Loading user data...</div>;
   }
@@ -126,8 +145,45 @@ const ChannelDetails = () => {
         ) : (
           allMessages.map((msg) => (
             <div key={msg.id} className="message p-4 rounded-lg shadow">
-              <p>{msg.text}</p>
-              <small className="text-sm text-gray-500">{new Date(msg.timestamp).toLocaleTimeString()}</small>
+              {editingMessage?.id === msg.id ? (
+                <div>
+                  <input
+                    type="text"
+                    value={editingMessage.text}
+                    onChange={(e) =>
+                      setEditingMessage({ ...editingMessage, text: e.target.value })
+                    }
+                    className="input input-bordered w-full mb-2"
+                  />
+                  <button
+                    onClick={() => handleSaveMessage(msg.id)}
+                    className="btn btn-primary mr-2"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEditing}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p>{msg.text}</p>
+                  <small className="text-sm text-gray-500">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </small>
+                  {msg.sender === userData.handle && (
+                    <button
+                      onClick={() => handleEditMessage(msg)}
+                      className="btn btn-link text-blue-500 ml-2"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           ))
         )}
@@ -141,7 +197,9 @@ const ChannelDetails = () => {
           onChange={(e) => setNewMessage(e.target.value)}
           className="input input-bordered w-full"
         />
-        <button type="submit" className="btn btn-primary">Send</button>
+        <button type="submit" className="btn btn-primary">
+          Send
+        </button>
       </form>
 
       <div className="leave-channel mt-4">
