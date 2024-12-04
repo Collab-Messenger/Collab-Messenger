@@ -69,6 +69,7 @@ const ChatRoom = ({ chatRoomId, onBack }) => {
         <button type="submit" className="btn btn-primary">
           Send
         </button>
+        <button className="btn btn-primary"> Video Call</button>
       </form>
     </div>
   );

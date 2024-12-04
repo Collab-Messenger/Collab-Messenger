@@ -8,7 +8,7 @@ import { onValue } from 'firebase/database';
  * @returns {Promise<Object>}
  */
 export const getUserByHandle = async (handle) => {
-  console.log('getUserByHandle', handle);
+  //console.log('getUserByHandle', handle);
   return get(ref(db, `users/${handle}`));
 };
 
