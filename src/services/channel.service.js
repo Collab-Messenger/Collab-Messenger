@@ -158,5 +158,42 @@ export const createChannel = async (teamId, channelData) => {
     }
   };
   
+  export const addMemberToChannel = async (teamId, channelId, userHandle) => {
+    try {
+      const teamRef = ref(db, `teams/${teamId}`);
+      const channelRef = ref(db, `teams/${teamId}/channels/${channelId}`);
   
+      // Fetch team and channel data
+      const [teamSnapshot, channelSnapshot] = await Promise.all([get(teamRef), get(channelRef)]);
+  
+      if (!teamSnapshot.exists()) {
+        throw new Error("Team not found");
+      }
+      if (!channelSnapshot.exists()) {
+        throw new Error("Channel not found");
+      }
+  
+      const teamData = teamSnapshot.val();
+      const channelData = channelSnapshot.val();
+      if (!teamData.members.includes(userHandle)) {
+        throw new Error("User is not a member of the team");
+      }
+      const updatedChannelMembers = channelData.members || [];
+      if (updatedChannelMembers.includes(userHandle)) {
+        throw new Error("User is already a member of the channel");
+      }
+      updatedChannelMembers.push(userHandle);
+
+      await update(channelRef, { members: updatedChannelMembers });
+  
+      console.log(`User ${userHandle} added to channel ${channelId} successfully.`);
+
+      return updatedChannelMembers;
+    } catch (error) {
+      console.error("Error adding member to channel:", error);
+      throw error;
+    }
+  };
+  
+
   

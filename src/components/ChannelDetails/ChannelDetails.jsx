@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ref, onValue, off, get, update } from "firebase/database";
 import { db } from "../../config/firebase-config";
 import { sendMessageChannel, leaveChannel, deleteChannel } from "../../services/channel.service";
+import { addMemberToChannel } from "../../services/channel.service";
 
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
@@ -11,11 +12,14 @@ const ChannelDetails = () => {
   const [newMessage, setNewMessage] = useState("");
   const [allMessages, setMessages] = useState([]);
   const [channelMembers, setChannelMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingMessage, setEditingMessage] = useState(null);
+  const [invitee, setInvitee] = useState("");
   const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch messages in real-time
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
 
@@ -36,6 +40,7 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
+  // Fetch channel members in real-time
   useEffect(() => {
     const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
 
@@ -51,6 +56,23 @@ const ChannelDetails = () => {
       off(membersRef);
     };
   }, [teamId, channelId]);
+
+  // Fetch team members in real-time
+  useEffect(() => {
+    const teamMembersRef = ref(db, `teams/${teamId}/members`);
+
+    const unsubscribe = onValue(teamMembersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setTeamMembers(snapshot.val());
+      } else {
+        setTeamMembers([]);
+      }
+    });
+
+    return () => {
+      off(teamMembersRef);
+    };
+  }, [teamId]);
 
   useEffect(() => {
     if (userData) {
@@ -113,6 +135,21 @@ const ChannelDetails = () => {
     }
   };
 
+  const handleInvite = async () => {
+    if (!invitee) return;
+
+    try {
+      // Call the function to add the member to the channel
+      await addMemberToChannel(teamId, channelId, invitee);
+      
+      // Since the member has been added, update the local state to reflect the changes
+      setInvitee(""); // Clear the invitee input
+    } catch (error) {
+      console.error("Error inviting member:", error);
+      alert(error.message);
+    }
+  };
+
   if (!isUserDataLoaded) {
     return <div>Loading user data...</div>;
   }
@@ -135,6 +172,29 @@ const ChannelDetails = () => {
         ) : (
           <p>No members in this channel.</p>
         )}
+      </div>
+
+      <div className="invite-member mt-4">
+        <h3 className="text-lg font-semibold">Add Team Member:</h3>
+        <div className="flex gap-2 items-center">
+          <select
+            value={invitee}
+            onChange={(e) => setInvitee(e.target.value)}
+            className="select select-bordered w-full"
+          >
+            <option value="">Select a member</option>
+            {teamMembers.map((member, index) => (
+              !channelMembers.includes(member) && (
+                <option key={index} value={member}>
+                  {member}
+                </option>
+              )
+            ))}
+          </select>
+          <button onClick={handleInvite} className="btn btn-primary">
+            Add
+          </button>
+        </div>
       </div>
 
       <div className="messages space-y-4">
