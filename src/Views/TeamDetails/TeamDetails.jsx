@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ref, onValue, off, update, get, push, set } from 'firebase/database';
+import { ref, onValue, off, get, push, set } from 'firebase/database';
 import {
-  getTeamById,
   removeMemberFromTeam,
   addMemberToTeam,
   leaveTeam,
   changeOwner,
   deleteTeam,
-} from '../../services/teams.service.js';
-import { AppContext } from '../../store/app-context.js';
+} from '../../services/teams.service';
+import { AppContext } from '../../store/app-context';
 import { db } from '../../config/firebase-config';
-import { getAllUsers, getUserByUid } from '../../services/user.service.js';
-import CreateChannel from '../../components/CreateChannel/CreateChannel.jsx';
+import { getAllUsers, getUserByUid } from '../../services/user.service';
+import CreateChannel from '../../components/CreateChannel/CreateChannel';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
@@ -105,7 +104,7 @@ export const TeamDetails = () => {
   const handleLeaveTeam = async () => {
     try {
       if (isOwner) {
-        const newOwnerHandle = team.members[1]; // First non-owner member
+        const newOwnerHandle = team.members[1];
         if (newOwnerHandle) {
           await changeOwner(teamId, newOwnerHandle);
         } else {
@@ -130,10 +129,12 @@ export const TeamDetails = () => {
     }
   };
 
-  const handleCreateChannel = async (channelData) => {
+  const handleCreateChannel = useCallback(async (channelData) => {
+    console.log('handleCreateChannel invoked with data: ', channelData);
+  
     try {
-      const teamChannelRef = ref(db, `teams/${teamId}/channels`); // Reference for channels under the team
-      const newChannelRef = push(teamChannelRef); // Generate unique channel ID
+      const teamChannelRef = ref(db, `teams/${teamId}/channels`);
+      const newChannelRef = push(teamChannelRef);
   
       // Fetch the team members
       const teamMembersRef = ref(db, `teams/${teamId}/members`);
@@ -143,9 +144,10 @@ export const TeamDetails = () => {
       // Add the members to the channel data
       const fullChannelData = {
         ...channelData,
-        members: teamMembers,  // Add the members to the new channel
+        members: channelData.isPrivate ? [team.owner] : teamMembers,  // Add the members to the new channel
       };
   
+      // Save the new channel to the database
       await set(newChannelRef, fullChannelData); // Add channel to the team
   
       // Fetch the updated team state to reflect the new channel
@@ -157,8 +159,8 @@ export const TeamDetails = () => {
     } catch (error) {
       console.error('Error creating channel:', error);
     }
-  };
-  
+  }, [teamId, team?.owner]);
+
   if (!team || !userHandle) {
     return <div>Loading...</div>;
   }
@@ -223,8 +225,9 @@ export const TeamDetails = () => {
 
       {showCreateChannelForm && (
         <CreateChannel
-          onChannelCreated={handleCreateChannel} // Pass the correct prop
-          title="Channel"
+          teamId={teamId}
+          teamOwner={team.owner}
+          onChannelCreated={handleCreateChannel} // Ensure this callback is passed to CreateChannel
         />
       )}
     </div>

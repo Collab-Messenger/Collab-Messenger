@@ -1,76 +1,88 @@
 import React, { useState } from "react";
 
-const CreateChannel = ({ onChannelCreated }) => {
-  const [channelName, setChannelName] = useState("");
-  const [description, setDescription] = useState("");
+const CreateChannel = ({ teamId, teamOwner, onChannelCreated }) => {
+  const [channelName, setChannelName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleCreateChannel = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure channel name is provided
-    if (!channelName.trim()) {
-      setError("Channel name is required.");
-      return;
-    }
+    if (loading) return;
 
-    // Prepare the channel data
+    setLoading(true);
+
     const channelData = {
       name: channelName.trim(),
       description: description.trim(),
+      createdBy: teamOwner,
       createdOn: new Date().toISOString(),
+      isPrivate,
     };
 
-    console.log("Creating channel with data:", channelData); // Log the data before sending
-
     try {
-      setLoading(true);
-      setError(""); // Clear any previous errors
+      console.log("Submitting channel:", channelData);
 
-      // Call the function to create the channel and pass the channel data
-      const newChannel = await onChannelCreated(channelData); 
+      setError("");
+      onChannelCreated(channelData);
 
-      if (newChannel) {
-        setChannelName(""); // Clear input fields
-        setDescription("");
-      } else {
-        setError("Failed to create channel.");
-      }
     } catch (error) {
-      setError("Error creating channel: " + error.message); // Handle error and show to user
+      setError("Error creating channel: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="create-channel">
-      <h2>Create a New Channel</h2>
-      <form onSubmit={handleCreateChannel}>
-        <div className="form-group">
-          <label htmlFor="channelName">Channel Name</label>
+    <div className="create-channel p-4 bg-white shadow-lg rounded-lg max-w-lg mx-auto mt-8">
+      <h2 className="text-2xl font-semibold mb-4">Create a New Channel</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group mb-4">
+          <label htmlFor="channelName" className="block text-sm font-medium text-gray-700">
+            Channel Name
+          </label>
           <input
             type="text"
             id="channelName"
             value={channelName}
             onChange={(e) => setChannelName(e.target.value)}
-            className="input input-bordered"
+            className="input input-bordered w-full p-2 border rounded-md"
             placeholder="Enter channel name"
+            required
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="description">Description (optional)</label>
+        <div className="form-group mb-4">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            Description (optional)
+          </label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="textarea textarea-bordered"
+            className="textarea textarea-bordered w-full p-2 border rounded-md"
             placeholder="Enter a brief description of the channel"
           />
         </div>
-        {error && <p className="text-red-500">{error}</p>}
-        <button type="submit" className="btn btn-primary" disabled={loading}>
+        <div className="form-group mb-4">
+          <label htmlFor="isPrivate" className="block text-sm font-medium text-gray-700">
+            Private Channel
+          </label>
+          <input
+            type="checkbox"
+            id="isPrivate"
+            checked={isPrivate}
+            onChange={(e) => setIsPrivate(e.target.checked)}
+            className="mr-2"
+          />
+        </div>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <button
+          type="submit"
+          className="btn btn-primary w-full p-2 bg-blue-500 text-white rounded-md"
+          disabled={loading}
+        >
           {loading ? "Creating..." : "Create Channel"}
         </button>
       </form>

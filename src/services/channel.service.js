@@ -1,6 +1,23 @@
 import { ref, push, set, get, update, remove } from "firebase/database";
 import { db } from "../config/firebase-config";
 
+export const createChannel = async (teamId, channelData) => {
+  try {
+    const teamChannelRef = ref(db, `teams/${teamId}/channels`);
+
+
+    const newChannelRef = push(teamChannelRef);
+    await set(newChannelRef, channelData);
+    const createdChannel = { key: newChannelRef.key, ...channelData };
+    return createdChannel;
+  } catch (error) {
+    console.error("Error creating channel:", error);
+    throw new Error("Channel creation failed.");
+  }
+};
+  
+  
+  
 export const sendMessageChannel = async (teamId, channelId, messageData) => {
   try {
 
@@ -12,51 +29,6 @@ export const sendMessageChannel = async (teamId, channelId, messageData) => {
     console.log("Message sent successfully!");
   } catch (error) {
     console.error("Error sending message:", error);
-  }
-};
-
-export const createChannel = async (teamId, channelData) => {
-  try {
-    console.log("Creating channel with data:", channelData); 
-
-
-    if (!channelData || !channelData.name || !channelData.description) {
-      throw new Error("Invalid channel data: name and description are required.");
-    }
-    const teamMembersRef = ref(db, `teams/${teamId}/members`);
-    const teamMembersSnapshot = await get(teamMembersRef);
-    console.log("Fetched team members:", teamMembersSnapshot.val());
-    const teamMembers = teamMembersSnapshot.exists() ? teamMembersSnapshot.val() : [];
-
-    if (!teamMembers || teamMembers.length === 0) {
-      throw new Error("No team members found.");
-    }
-    console.log("Team members:", teamMembers);
-
-    const fullChannelData = {
-      name: channelData.name,
-      description: channelData.description,
-      createdOn: new Date().toISOString(),
-    };
-
-    console.log("Full channel data to be set in Firebase:", fullChannelData);
-
-
-    const channelsRef = ref(db, `teams/${teamId}/channels`);
-    const newChannelRef = push(channelsRef);
-    await set(newChannelRef, fullChannelData);
-
-    console.log("Channel created successfully:", newChannelRef.key);
-
-    const channelMembersRef = ref(db, `teams/${teamId}/channels/${newChannelRef.key}/members`);
-    await set(channelMembersRef, teamMembers);
-
-    console.log("Members added to the channel successfully.");
-
-    return newChannelRef.key;
-  } catch (error) {
-    console.error("Error creating channel:", error);
-    throw error;
   }
 };
 

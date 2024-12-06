@@ -3,8 +3,7 @@ import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, onValue, off, get, update } from "firebase/database";
 import { db } from "../../config/firebase-config";
-import { sendMessageChannel, leaveChannel, deleteChannel } from "../../services/channel.service";
-import { addMemberToChannel } from "../../services/channel.service";
+import { sendMessageChannel, leaveChannel, deleteChannel, addMemberToChannel } from "../../services/channel.service";
 
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
@@ -19,7 +18,6 @@ const ChannelDetails = () => {
   const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch messages in real-time
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
 
@@ -40,13 +38,13 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
-  // Fetch channel members in real-time
   useEffect(() => {
     const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
 
     const unsubscribe = onValue(membersRef, (snapshot) => {
       if (snapshot.exists()) {
-        setChannelMembers(snapshot.val());
+        const data = snapshot.val();
+        setChannelMembers(Object.values(data));
       } else {
         setChannelMembers([]);
       }
@@ -57,13 +55,13 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
-  // Fetch team members in real-time
   useEffect(() => {
     const teamMembersRef = ref(db, `teams/${teamId}/members`);
 
     const unsubscribe = onValue(teamMembersRef, (snapshot) => {
       if (snapshot.exists()) {
-        setTeamMembers(snapshot.val());
+        const data = snapshot.val();
+        setTeamMembers(Object.values(data));
       } else {
         setTeamMembers([]);
       }
@@ -139,11 +137,10 @@ const ChannelDetails = () => {
     if (!invitee) return;
 
     try {
-      // Call the function to add the member to the channel
       await addMemberToChannel(teamId, channelId, invitee);
       
-      // Since the member has been added, update the local state to reflect the changes
-      setInvitee(""); // Clear the invitee input
+     
+      setInvitee("");
     } catch (error) {
       console.error("Error inviting member:", error);
       alert(error.message);
