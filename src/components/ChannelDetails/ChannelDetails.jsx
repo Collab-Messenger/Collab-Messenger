@@ -3,7 +3,7 @@ import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, onValue, off, get, update } from "firebase/database";
 import { db } from "../../config/firebase-config";
-import { sendMessageChannel, leaveChannel, deleteChannel, addMemberToChannel } from "../../services/channel.service";
+import { sendMessageChannel, leaveChannel, deleteChannel, addMemberToChannel, removeMemberFromChannel } from "../../services/channel.service";
 
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
@@ -78,6 +78,8 @@ const ChannelDetails = () => {
     }
   }, [userData]);
 
+  const isOwner = channelMembers && channelMembers.length > 0 && channelMembers[0] === userData.handle;
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
@@ -114,6 +116,15 @@ const ChannelDetails = () => {
       console.error("Error leaving channel:", error);
     }
   };
+  const handleKickMember = async (member) => {
+    if (!isOwner) return;
+    try {
+      await removeMemberFromChannel(teamId, channelId, member);
+    } catch (error) {
+      console.error("Error kicking member from channel:", error);
+    }
+  };
+  
 
   const handleEditMessage = (msg) => {
     setEditingMessage(msg);
@@ -138,14 +149,13 @@ const ChannelDetails = () => {
 
     try {
       await addMemberToChannel(teamId, channelId, invitee);
-      
-     
       setInvitee("");
     } catch (error) {
       console.error("Error inviting member:", error);
       alert(error.message);
     }
   };
+
 
   if (!isUserDataLoaded) {
     return <div>Loading user data...</div>;
@@ -163,7 +173,17 @@ const ChannelDetails = () => {
         {channelMembers.length > 0 ? (
           <ul className="list-disc list-inside">
             {channelMembers.map((member, index) => (
-              <li key={index}>{member}</li>
+              <li key={index}>
+                {member}
+                {isOwner && member !== userData.handle && (
+                  <button
+                    onClick={() => handleKickMember(member)}
+                    className="btn btn-link text-blue-500 ml-2"
+                  >
+                    Kick
+                  </button>
+                )}
+              </li>
             ))}
           </ul>
         ) : (

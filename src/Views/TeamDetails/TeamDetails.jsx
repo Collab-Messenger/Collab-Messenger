@@ -136,21 +136,20 @@ export const TeamDetails = () => {
       const teamChannelRef = ref(db, `teams/${teamId}/channels`);
       const newChannelRef = push(teamChannelRef);
   
-      // Fetch the team members
+
       const teamMembersRef = ref(db, `teams/${teamId}/members`);
       const teamMembersSnapshot = await get(teamMembersRef);
       const teamMembers = teamMembersSnapshot.exists() ? teamMembersSnapshot.val() : [];
   
-      // Add the members to the channel data
+  
       const fullChannelData = {
         ...channelData,
-        members: channelData.isPrivate ? [team.owner] : teamMembers,  // Add the members to the new channel
+        members: channelData.isPrivate ? [team.owner] : teamMembers,
       };
   
-      // Save the new channel to the database
-      await set(newChannelRef, fullChannelData); // Add channel to the team
-  
-      // Fetch the updated team state to reflect the new channel
+
+      await set(newChannelRef, fullChannelData);
+
       const snapshot = await get(ref(db, `teams/${teamId}`));
       setTeam(snapshot.val());
       setShowCreateChannelForm(false);
@@ -227,7 +226,7 @@ export const TeamDetails = () => {
         <CreateChannel
           teamId={teamId}
           teamOwner={team.owner}
-          onChannelCreated={handleCreateChannel} // Ensure this callback is passed to CreateChannel
+          onChannelCreated={handleCreateChannel}
         />
       )}
     </div>

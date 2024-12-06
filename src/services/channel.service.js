@@ -168,4 +168,25 @@ export const sendMessageChannel = async (teamId, channelId, messageData) => {
   };
   
 
+
+  export const removeMemberFromChannel = async (teamId, channelId, memberToKick) => {
+    try {
+      const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
+      const membersSnapshot = await get(membersRef);
+      
+      const currentMembers = membersSnapshot.val() || [];
+
+      const memberIndex = currentMembers.indexOf(memberToKick);
+      if (memberIndex !== -1) {
+
+        const memberRef = ref(db, `teams/${teamId}/channels/${channelId}/members/${memberIndex}`);
+        await remove(memberRef);
+        console.log("Member removed successfully");
+      }
+    } catch (error) {
+      console.error("Error kicking member from channel:", error);
+      throw new Error("Failed to kick member.");
+    }
+  };
+  
   
