@@ -118,64 +118,102 @@ export const getAllChatRooms = async () => {
 //   });
 // };
 
+
+
 export const getMessages = async (chatRoomId) => {
   try {
-    const messagesSnapshot = await get(ref(db, `chatRooms/${chatRoomId}/messages`));
-
-    if (!messagesSnapshot.exists()) {
-      return []; // Return an empty array if no messages exist
+    const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
+    const snapshot = await get(messagesRef); // Get the messages from Realtime Database
+    
+    if (!snapshot.exists()) {
+      return []; // Return an empty array if there are no messages
     }
 
-    const messagesObject = messagesSnapshot.val();
-    console.log("Service Messages:", messagesObject);
+    const messagesData = snapshot.val(); // Get the message data
+    const messages = [];
 
-    // Convert messages object into an array with Firebase keys
-    return Object.entries(messagesObject).map(([key, value]) => ({
-      id: key, // Include Firebase key for possible use in the UI
-      ...value,
-    }));
+    // Loop through the messages and create an array
+    for (const messageId in messagesData) {
+      const message = messagesData[messageId];
+      messages.push({
+        id: messageId,
+        ...message,
+      });
+    }
+
+    // Optionally, you can sort messages by timestamp here
+    messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return messages;
   } catch (error) {
-    console.error("Error retrieving messages:", error.message);
-    return []; // Return empty array on error
+    console.error("Error fetching messages:", error.message);
+    throw error;
   }
 };
+
+
 
 
 export const sendMessage = async (chatRoomId, message) => {
   try {
     const messagesRef = ref(db, `chatRooms/${chatRoomId}/messages`);
-    const newMessageRef = push(messagesRef);
-
-    await set(newMessageRef, {
-      text: message.text,
-      sender: message.sender,
-      timestamp: new Date().toISOString(),
-    });
-
-    console.log("Message sent:", message);
+    const newMessageRef = push(messagesRef); // Push the new message to the messages node
+    await set(newMessageRef, message); // Set the message at the newly created reference
   } catch (error) {
     console.error("Error sending message:", error.message);
-    throw error; // Rethrow error to handle it in the component
+    throw error;
   }
 };
 
 
+
+
 export const createChatRoom = async (userHandle, friendHandle) => {
+  console.log("userHandle:", userHandle);
+  console.log("friendHandle:", friendHandle);
   try {
-    const newChatRoomRef = push(ref(db, "chatRooms"));
+    const chatRoomsRef = ref(db, "chatRooms");
+
+    // Check if a chat room already exists for these participants
+    const snapshot = await get(chatRoomsRef);
+
+    let existingChatRoom = null;
+
+    if (snapshot.exists()) {
+      const chatRooms = snapshot.val();
+
+      // Loop through chatRooms to find a match
+      for (const roomId in chatRooms) {
+        const room = chatRooms[roomId];
+        if (
+          room.participants &&
+          room.participants.includes(userHandle) &&
+          room.participants.includes(friendHandle)
+        ) {
+          existingChatRoom = { id: roomId, ...room };
+          break;
+        }
+      }
+    }
+
+    // If the chat room exists, return it
+    if (existingChatRoom) {
+      return existingChatRoom;
+    }
+
+    // Otherwise, create a new chat room
     const newChatRoom = {
-      name: `ChatRoom between ${userHandle} and ${friendHandle}`,
-      createdOn: serverTimestamp(),
-      description: "",
-      messages: {},
+      participants: [userHandle, friendHandle],
+      createdOn: new Date().toISOString(),
     };
-    await set(newChatRoomRef, newChatRoom);
-    return {
-      id: newChatRoomRef.key,
-      ...newChatRoom,
-    };
+
+    const newChatRoomRef = push(chatRoomsRef, newChatRoom);
+
+    return { id: newChatRoomRef.key, ...newChatRoom };
   } catch (error) {
     console.error("Error creating chat room:", error.message);
     throw error;
   }
 };
+
+

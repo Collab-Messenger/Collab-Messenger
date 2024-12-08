@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { createChatRoom } from "../../services/chat.service.js";
 
-
-const CreateChatRoom = ({ onChatRoomCreated }) => {
+const CreateChatRoom = ({ userHandle, friendHandle, onChatRoomCreated }) => {
   const [chatRoomName, setChatRoomName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,8 @@ const CreateChatRoom = ({ onChatRoomCreated }) => {
         createdOn: new Date().toISOString(),
       };
 
-      const newChatRoom = await createChatRoom(userHandle, friendHandle);
+      // Call the service to create a chat room
+      const newChatRoom = await createChatRoom(userHandle, friendHandle, chatRoomData);
 
       if (newChatRoom) {
         if (onChatRoomCreated) {
@@ -79,4 +79,3 @@ const CreateChatRoom = ({ onChatRoomCreated }) => {
 };
 
 export default CreateChatRoom;
-

@@ -8,9 +8,8 @@ import ChatRoom from "../../components/ChatRoom/display-chat";
 export const Friends = () => {
 
     const { userData } = useContext(AppContext);
+    console.log("UserData:",userData.friends)
     const [friends,setFriends] = useState(userData?.friends || [])
-    console.log("userData:",userData)
-    console.log("Friends",friends)
     const [selectedChatRoomId, setSelectedChatRoomId] = useState();
     const [currentFriend , setCurrentFriend] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -30,6 +29,7 @@ export const Friends = () => {
         return "User";
     };
 const x = 0;
+
     const handleRemoveFriend = async (friendHandle) => {
       try {
         await removeFriend(userData.handle, friendHandle);
@@ -39,32 +39,31 @@ const x = 0;
       }
     };
 
-    const handleStartChat = async (friend) => {
+    const handleStartChat = async (friendHandle) => {
       try {
         setLoading(true);
         setCreatingChatRoom(false);
-  
-        // Generate a unique chatRoomId based on user and friend handles
-        const chatRoomId = `${userData.handle}_${friend.handle}`; // Friends is in userData > friends get current
-  
-        // Attempt to retrieve an existing chatroom
-        const chatRoom = await getChatRoomById(chatRoomId);
-  
+    
+        console.log("userData.handle:", userData.handle);
+        console.log("friendHandle:", friendHandle);
+    
+        const chatRoom = await createChatRoom(userData.handle, friendHandle);
+    
         if (chatRoom) {
-          // Chatroom exists, set it as the selected one
-          setSelectedChatRoomId(chatRoomId);
-          setCurrentFriend(friend);
-        } else {
-          // Chatroom does not exist, trigger chat room creation
-          setCreatingChatRoom(true);
-          setCurrentFriend(friend);
+          // Chat room exists or was created, set it as selected
+          setSelectedChatRoomId(chatRoom.id);
+          setCurrentFriend({ handle: friendHandle });  // Store the friend handle as currentFriend
         }
       } catch (error) {
-        console.error("Error retrieving or creating chatroom:", error.message);
+        console.error("Error creating or retrieving chat room:", error.message);
       } finally {
         setLoading(false);
       }
     };
+    
+    
+    
+    
       
     const handleChatRoomCreated = (newChatRoom) => {
       // When a new chat room is created, set it as the selected one
@@ -81,13 +80,7 @@ const x = 0;
 
   return (
   <div>
-    {creatingChatRoom ? (
-      <CreateChatRoom
-        userHandle={userData.handle}
-        friendHandle={currentFriend.handle}
-        onChatRoomCreated={handleChatRoomCreated}
-      />
-    ) : selectedChatRoomId && currentFriend ? (
+   {selectedChatRoomId && currentFriend ? (
       <ChatRoom chatRoomId={selectedChatRoomId} friend={currentFriend} onBack={handleBack} />
     ) : (
       <div>
@@ -116,7 +109,7 @@ const x = 0;
                   </li>
                   <button
                     className="btn btn-primary"
-                    onClick={() => handleStartChat(friend.handle)}
+                    onClick={() => handleStartChat(friend)}
                   >
                     Message
                   </button>
