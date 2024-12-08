@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getUserByUid } from "../../services/user.service.js";
 import { ref, set } from "firebase/database"; 
 import { db } from "../../config/firebase-config";
+import styles from './TeamsCreate.module.css';
 
 export function TeamsCreate() {
   const { user } = useContext(AppContext);
@@ -17,9 +18,7 @@ export function TeamsCreate() {
     channels: []
   });
 
-
   const createTeam = async () => {
-
     if (team.name.length < 3 || team.name.length > 40) {
       alert('Team name must be between 3 and 40 characters.');
       return;
@@ -32,9 +31,7 @@ export function TeamsCreate() {
     }
 
     try {
-  
       const userHandle = user?.handle || (await getUserByUid(user.uid)).handle;
-
       if (!userHandle) {
         alert("Unable to retrieve your user handle. Please log in again.");
         return;
@@ -48,8 +45,6 @@ export function TeamsCreate() {
       };
 
       const teamId = await addTeam(newTeam);
-
-   
       setTeam((prevTeam) => ({
         ...prevTeam,
         id: teamId,
@@ -66,15 +61,17 @@ export function TeamsCreate() {
   };
 
   return (
-    <div>
-      <h1>Create a Team</h1>
-      <input
-        type="text"
-        placeholder="Team Name"
-        value={team.name}
-        onChange={(e) => setTeam({ ...team, name: e.target.value })}
-      />
-      <button onClick={createTeam}>Create Team</button>
+    <div className={styles.popupBackground}>
+      <div className={styles.popupContainer}>
+        <h1>Create a Team</h1>
+        <input
+          type="text"
+          placeholder="Team Name"
+          value={team.name}
+          onChange={(e) => setTeam({ ...team, name: e.target.value })}
+        />
+        <button onClick={createTeam}>Create Team</button>
+      </div>
     </div>
   );
 }

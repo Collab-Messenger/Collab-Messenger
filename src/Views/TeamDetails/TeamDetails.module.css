@@ -1,0 +1,148 @@
+.container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Headings */
+  .title {
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .subtitle {
+    color: #555;
+    margin-bottom: 20px;
+  }
+  
+  /* Buttons Container */
+  .buttonContainer {
+    display: flex;
+    flex-wrap: wrap; /* Ensures buttons wrap if the container is narrow */
+    justify-content: flex-start;
+    gap: 10px; /* Adds space between buttons */
+    margin-bottom: 20px; /* Adds space between the buttons and the content below */
+  }
+  
+  /* Buttons */
+  .button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1; /* Makes buttons stretch evenly if the container is wide enough */
+    text-align: center;
+    max-width: 200px; /* Ensures buttons don’t get too wide */
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Custom Red Button for "Kick" action */
+  .redButton {
+    padding: 5px 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-right: 15px;
+  }
+  .yellowButton {
+    padding: 5px 10px;
+    background-color: rgb(255, 196, 0);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 3px;
+    
+  }
+  
+  .redButton:hover {
+    background-color: #b02a37;
+  }
+  .yellowButton:hover {
+    background-color: #d9a800;
+  }
+  
+  /* Section Containers */
+  .section {
+    margin-bottom: 20px;
+  }
+  
+  .listContainer {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+  }
+  
+  .listItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .listItem:last-child {
+    border-bottom: none;
+  }
+  
+  /* Popup for users */
+  .popupBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popupContainer {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    width: 400px;
+    max-width: 90%;
+  }
+  
+  .popupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .popupTitle {
+    font-size: 1.2em;
+    color: #333;
+  }
+  
+  .popupClose {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+  }
+  
+  .teamName {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  

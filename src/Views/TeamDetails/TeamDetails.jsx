@@ -12,6 +12,7 @@ import { AppContext } from '../../store/app-context';
 import { db } from '../../config/firebase-config';
 import { getAllUsers, getUserByUid } from '../../services/user.service';
 import CreateChannel from '../../components/CreateChannel/CreateChannel';
+import styles from './TeamDetails.module.css';
 
 export const TeamDetails = () => {
   const { user } = useContext(AppContext);
@@ -19,11 +20,9 @@ export const TeamDetails = () => {
   const navigate = useNavigate();
   const [team, setTeam] = useState(null);
   const [members, setMembers] = useState([]);
-  const [showMembers, setShowMembers] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
-  const [showUsers, setShowUsers] = useState(false);
   const [userHandle, setUserHandle] = useState(null);
-  const [showCreateChannelForm, setShowCreateChannelForm] = useState(false);
+  const [activeSection, setActiveSection] = useState(null); // New single state for active section
 
   useEffect(() => {
     if (!user || !user.uid) {
@@ -81,24 +80,28 @@ export const TeamDetails = () => {
     }
   };
 
-  const handleShowMembers = () => {
-    setShowMembers((prev) => !prev);
-  };
-
   const handleShowUsers = async () => {
     if (!isOwner) return;
-    if (!showUsers) {
+    if (activeSection !== 'users') {
       try {
         const usersData = await getAllUsers();
         const nonMembers = usersData.filter(
-          (user) => !team.members.includes(user.handle)
+          (user) => team && team.members && !team.members.includes(user.handle)
         );
         setAllUsers(nonMembers);
       } catch (error) {
         console.error('Error fetching all users:', error);
       }
     }
-    setShowUsers((prev) => !prev);
+    setActiveSection(activeSection === 'users' ? null : 'users');
+  };
+  const handleChangeOwner = async (newOwnerHandle) => {
+    if (!isOwner) return;
+    try {
+      await changeOwner(teamId, newOwnerHandle);
+    } catch (error) {
+      console.error('Error changing owner:', error);
+    }
   };
 
   const handleLeaveTeam = async () => {
@@ -120,41 +123,25 @@ export const TeamDetails = () => {
     }
   };
 
-  const handleChangeOwner = async (newOwnerHandle) => {
-    if (!isOwner) return;
-    try {
-      await changeOwner(teamId, newOwnerHandle);
-    } catch (error) {
-      console.error('Error changing owner:', error);
-    }
-  };
-
   const handleCreateChannel = useCallback(async (channelData) => {
-    console.log('handleCreateChannel invoked with data: ', channelData);
-  
     try {
       const teamChannelRef = ref(db, `teams/${teamId}/channels`);
       const newChannelRef = push(teamChannelRef);
-  
 
       const teamMembersRef = ref(db, `teams/${teamId}/members`);
       const teamMembersSnapshot = await get(teamMembersRef);
       const teamMembers = teamMembersSnapshot.exists() ? teamMembersSnapshot.val() : [];
-  
-  
+
       const fullChannelData = {
         ...channelData,
         members: channelData.isPrivate ? [team.owner] : teamMembers,
       };
-  
 
       await set(newChannelRef, fullChannelData);
 
       const snapshot = await get(ref(db, `teams/${teamId}`));
       setTeam(snapshot.val());
-      setShowCreateChannelForm(false);
-  
-      console.log('Channel added successfully to the team with members!');
+      setActiveSection(null); // Close form after creating channel
     } catch (error) {
       console.error('Error creating channel:', error);
     }
@@ -165,64 +152,83 @@ export const TeamDetails = () => {
   }
 
   return (
-    <div>
-      <h1>Team: {team.name}</h1>
-      <h2>{isOwner ? 'You are the owner' : `Owner: ${team.owner}`}</h2>
-
-      <button onClick={handleShowMembers}>
-        {showMembers ? 'Hide Members' : 'Show Members'}
-      </button>
-
-      {showMembers && (
-        <div>
+    <div className={styles.container}>
+      <h1 className={styles.teamName}>{team.name}</h1>
+  
+      <h2 className={styles.subtitle}>
+        {isOwner ? 'You are the owner' : `Owner: ${team.owner}`}
+      </h2>
+  
+      {/* Button Container */}
+      <div className={styles.buttonContainer}>
+        <button
+          className={styles.button}
+          onClick={() => setActiveSection(activeSection === 'members' ? null : 'members')}
+        >
+          {activeSection === 'members' ? 'Hide Members' : 'Show Members'}
+        </button>
+  
+        {isOwner && (
+          <button className={styles.button} onClick={handleShowUsers}>
+            {activeSection === 'users' ? 'Hide All Users' : 'Show All Users'}
+          </button>
+        )}
+  
+        <button className={styles.button} onClick={handleLeaveTeam}>
+          Leave Team
+        </button>
+  
+        {isOwner && (
+          <button
+            className={styles.button}
+            onClick={() => setActiveSection(activeSection === 'createChannel' ? null : 'createChannel')}
+          >
+            {activeSection === 'createChannel' ? 'Hide Create Channel' : 'Create Channel'}
+          </button>
+        )}
+      </div>
+  
+      {activeSection === 'members' && (
+        <div className={`${styles.section} ${styles.membersList}`}>
           <h2>Members:</h2>
           <div>
             {members.map((handle, index) => (
-              <div key={`member-${handle}-${index}`} style={{ marginBottom: '10px' }}>
+              <div key={`member-${handle}-${index}`} className={styles.listItem}>
                 {handle}
-
                 {isOwner && handle !== userHandle && (
-                  <button onClick={() => handleKickMember(handle)}>Kick</button>
-                )}
-
-                {isOwner && handle !== userHandle && (
-                  <button onClick={() => handleChangeOwner(handle)}>Change Owner</button>
+                  <div className={styles.memberActions}>
+                    <button className={styles.redButton} onClick={() => handleKickMember(handle)}>
+                      Kick user
+                    </button>
+                    <button className={styles.yellowButton} onClick={() => handleChangeOwner(handle)}>Make Owner</button>
+                  </div>
                 )}
               </div>
             ))}
           </div>
         </div>
       )}
-
-      {isOwner && (
-        <>
-          <button onClick={handleShowUsers}>
-            {showUsers ? 'Hide All Users' : 'Show All Users'}
-          </button>
-
-          {showUsers && (
-            <div>
-              <h2>All Users:</h2>
-              <div>
-                {allUsers.map((user, index) => (
-                  <div key={`user-${user.handle}-${index}`} style={{ marginBottom: '10px' }}>
-                    {user.handle}
-                    <button onClick={() => handleAddMember(user.handle)}>Add to Team</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+  
+      {isOwner && activeSection === 'users' && (
+        <div className={`${styles.section} ${styles.usersList}`}>
+          <h2>All Users:</h2>
+          <div>
+            {allUsers.length === 0 ? (
+              <p>No users available</p>
+            ) : (
+              allUsers.map((user, index) => (
+                <div key={`user-${user.handle}-${index}`} className={styles.listItem}>
+                  {user.handle}
+                  <button onClick={() => handleAddMember(user.handle)}>Add to Team</button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       )}
-
-      <button onClick={handleLeaveTeam}>Leave Team</button>
-
-      {isOwner && !showCreateChannelForm && (
-        <button onClick={() => setShowCreateChannelForm(true)}>Create Channel</button>
-      )}
-
-      {showCreateChannelForm && (
+  
+   
+      {activeSection === 'createChannel' && (
         <CreateChannel
           teamId={teamId}
           teamOwner={team.owner}
@@ -231,4 +237,5 @@ export const TeamDetails = () => {
       )}
     </div>
   );
+  
 };

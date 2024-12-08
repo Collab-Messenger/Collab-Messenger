@@ -178,7 +178,7 @@ const ChannelDetails = () => {
                 {isOwner && member !== userData.handle && (
                   <button
                     onClick={() => handleKickMember(member)}
-                    className="btn btn-link text-blue-500 ml-2"
+                   className="ml-2"
                   >
                     Kick
                   </button>
@@ -254,7 +254,7 @@ const ChannelDetails = () => {
                   {msg.sender === userData.handle && (
                     <button
                       onClick={() => handleEditMessage(msg)}
-                      className="btn btn-link text-blue-500 ml-2"
+                      className="ml-2"
                     >
                       Edit
                     </button>

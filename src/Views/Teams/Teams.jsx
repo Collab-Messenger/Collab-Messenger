@@ -8,6 +8,7 @@ export const Teams = () => {
   const { user } = useContext(AppContext);
   const [teams, setTeams] = useState([]);
   const [userHandle, setUserHandle] = useState(null);
+  const [visibleChannels, setVisibleChannels] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,8 +42,6 @@ export const Teams = () => {
               return team;
             });
 
-            console.log("Filtered Teams with Channels:", filteredTeams);
-
             setTeams(filteredTeams || []);
           } else {
             console.error("User handle is missing or undefined.");
@@ -68,44 +67,73 @@ export const Teams = () => {
     navigate(`/teams/${teamId}/channels/${channelId}`);
   };
 
+  const toggleChannelsVisibility = (teamId) => {
+    setVisibleChannels((prevState) => ({
+      ...prevState,
+      [teamId]: !prevState[teamId],
+    }));
+  };
+
   if (!user) {
     return <div>Please log in to view your teams.</div>;
   }
 
   return (
-    <div>
-      <h1>Teams</h1>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Teams</h1>
+        <button className="btn btn-primary" onClick={handleCreateTeam}>
+          Create New Team
+        </button>
+      </div>
+
       {teams.length === 0 ? (
         <div>You are not a member of any teams.</div>
       ) : (
-        <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <div key={team.id} className="team">
-              <h2 onClick={() => handleViewTeam(team.id)}>
-                {team.name} 
-              </h2>
-              <div className="channels">
-               
-                {team.channels && Object.entries(team.channels).length > 0 ? (
-                  Object.entries(team.channels).map(([channelId, channelData]) => (
-                    <div
-                      key={channelId}
-                      className="channel"
-                      onClick={() => handleViewChannel(team.id, channelId)}
-                    >
-                      <h3>Channel: {channelData.name}</h3>
-                      <p>Description: {channelData.description}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No channels available</p>
+            <div key={team.id} className="card bg-base-100 w-96 shadow-xl">
+              <div className="card-body items-center text-center">
+                <h2 className="card-title">{team.name}</h2>
+
+                <div className="card-actions justify-center mt-4 space-x-2">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => toggleChannelsVisibility(team.id)}
+                  >
+                    {visibleChannels[team.id] ? "Hide Channels" : "Show Channels"}
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => handleViewTeam(team.id)}
+                  >
+                    Manage
+                  </button>
+                </div>
+
+                {visibleChannels[team.id] && (
+                  <div className="channels mt-4">
+                    {team.channels && Object.entries(team.channels).length > 0 ? (
+                      Object.entries(team.channels).map(([channelId, channelData]) => (
+                        <div
+                          key={channelId}
+                          className="channel p-2 bg-gray-100 rounded-lg mb-2 cursor-pointer"
+                          onClick={() => handleViewChannel(team.id, channelId)}
+                        >
+                          <h3 className="text-lg font-semibold">Name: {channelData.name}</h3>
+                          <p className="text-sm text-gray-600">{channelData.description}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No channels available</p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           ))}
         </div>
       )}
-      <button onClick={handleCreateTeam}>Create New Team</button>
     </div>
   );
 };
