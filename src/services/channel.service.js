@@ -16,7 +16,29 @@ export const createChannel = async (teamId, channelData) => {
   }
 };
   
-  
+/**
+ * Fetch messages for a specific channel in a team
+ * @param {string} teamId - The ID of the team
+ * @param {string} channelId - The ID of the channel
+ * @returns {Array} - An array of messages or an empty array if no messages exist
+ */
+export const fetchMessagesForChannel = async (teamId, channelId) => {
+  try {
+    const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
+    const messagesSnapshot = await get(messagesRef);
+
+    if (messagesSnapshot.exists()) {
+      return Object.values(messagesSnapshot.val());
+    } else {
+      console.log("No messages found for this channel.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw new Error("Failed to fetch messages.");
+  }
+};
+
   
 export const sendMessageChannel = async (teamId, channelId, messageData) => {
   try {

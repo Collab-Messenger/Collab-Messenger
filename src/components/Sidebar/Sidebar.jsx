@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getTeams } from "../../services/teams.service.js";
-import { getUserByUid } from "../../services/user.service.js";
-import { AppContext } from "../../store/app-context.js";
-import { ToggleMode } from "../ToggleMode/ToggleMode";
+import { AppContext } from "../../store/app-context";
+import { getUserByUid } from "../../services/user.service";
+import { fetchMessagesForChannel } from "../../services/channel.service";
+import { getTeams } from "../../services/teams.service";
 import styles from "./Sidebar.module.css";
+import { ToggleMode } from "../ToggleMode/ToggleMode";
 
 const Sidebar = () => {
   const { user } = useContext(AppContext);
   const [teams, setTeams] = useState([]);
   const [visibleChannels, setVisibleChannels] = useState({});
   const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
+  const [messages, setMessages] = useState([]); // State to store messages
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,11 +23,11 @@ const Sidebar = () => {
           if (userData && userData.handle) {
             const teamsData = await getTeams(userData.handle);
 
-            const userTeams = Object.values(teamsData).filter(team =>
+            const userTeams = Object.values(teamsData).filter((team) =>
               team.members && team.members.includes(userData.handle)
             );
 
-            const filteredTeams = userTeams.map(team => {
+            const filteredTeams = userTeams.map((team) => {
               if (team.channels) {
                 const filteredChannels = Object.entries(team.channels).filter(([channelId, channelData]) => {
                   return channelData.members && channelData.members.includes(userData.handle);
@@ -59,8 +61,20 @@ const Sidebar = () => {
     navigate(`/teams/${teamId}`);
   };
 
-  const handleViewChannel = (teamId, channelId) => {
-    navigate(`/teams/${teamId}/channels/${channelId}`);
+  const handleViewChannel = async (teamId, channelId) => {
+    try {
+      // Clear the current messages before fetching new ones
+      setMessages([]);
+
+      // Fetch messages for the new channel
+      const newMessages = await fetchMessagesForChannel(teamId, channelId);
+      setMessages(newMessages);
+
+      // Navigate to the new channel
+      navigate(`/teams/${teamId}/channels/${channelId}`);
+    } catch (error) {
+      console.error("Error switching channels:", error);
+    }
   };
 
   const toggleChannelsVisibility = (teamId) => {
@@ -80,61 +94,60 @@ const Sidebar = () => {
         <button className="btn join-item">DM's</button>
 
         <div className={styles.sidebar}>
-  <div className="join join-vertical" style={{ display: "flex", flexDirection: "column" }}>
-    <button className="btn join-item teams-button" onClick={toggleTeamsDropdown}>
-      Teams
-    </button>
-    {showTeamsDropdown && (
-      <div className="dropdown">
-        {teams.length > 0 ? (
-          <ul className="menu bg-base-100 w-full p-2 rounded-box shadow">
-            {teams.map((team) => (
-              <li key={team.id} className="team-item">
-                <div className="flex justify-between items-center">
-                  <button
-                    className="flex-grow text-left"
-                    onClick={() => toggleChannelsVisibility(team.id)}
-                  >
-                    {team.name}
-                  </button>
-                  <button
-                    className="w-2 h-8 flex items-center justify-center rounded-full"
-                    onClick={() => handleViewTeam(team.id)}
-                  >
-                    ⋮
-                  </button>
-                </div>
-                {visibleChannels[team.id] && (
-                  <ul>
-                    {team.channels && Object.entries(team.channels).length > 0 ? (
-                      Object.entries(team.channels).map(([channelId, channelData]) => (
-                        <li key={channelId} className="channel-item">
+          <div className="join join-vertical" style={{ display: "flex", flexDirection: "column" }}>
+            <button className="btn join-item teams-button" onClick={toggleTeamsDropdown}>
+              Teams
+            </button>
+            {showTeamsDropdown && (
+              <div className="dropdown">
+                {teams.length > 0 ? (
+                  <ul className="menu bg-base-100 w-full p-2 rounded-box shadow">
+                    {teams.map((team) => (
+                      <li key={team.id} className="team-item">
+                        <div className="flex justify-between items-center">
                           <button
-                            className="btn btn-sm btn-outline"
-                            onClick={() => handleViewChannel(team.id, channelId)}
+                            className="flex-grow text-left"
+                            onClick={() => toggleChannelsVisibility(team.id)}
                           >
-                            {channelData.name}
+                            {team.name}
                           </button>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-sm text-gray-500 channel-item">
-                        No channels available
+                          <button
+                            className="w-2 h-8 flex items-center justify-center rounded-full"
+                            onClick={() => handleViewTeam(team.id)}
+                          >
+                            ⋮
+                          </button>
+                        </div>
+                        {visibleChannels[team.id] && (
+                          <ul>
+                            {team.channels && Object.entries(team.channels).length > 0 ? (
+                              Object.entries(team.channels).map(([channelId, channelData]) => (
+                                <li key={channelId} className="channel-item">
+                                  <button
+                                    className="btn btn-sm btn-outline"
+                                    onClick={() => handleViewChannel(team.id, channelId)}
+                                  >
+                                    {channelData.name}
+                                  </button>
+                                </li>
+                              ))
+                            ) : (
+                              <li className="text-sm text-gray-500 channel-item">
+                                No channels available
+                              </li>
+                            )}
+                          </ul>
+                        )}
                       </li>
-                    )}
+                    ))}
                   </ul>
+                ) : (
+                  <div className="text-sm text-gray-500 p-2">You are not a member of any teams.</div>
                 )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="text-sm text-gray-500 p-2">You are not a member of any teams.</div>
-        )}
-      </div>
-    )}
-  </div>
-</div>
-
+              </div>
+            )}
+          </div>
+        </div>
 
         <div style={{ marginTop: "50px" }}>
           <button className="btn join-item">Channel 1</button>
