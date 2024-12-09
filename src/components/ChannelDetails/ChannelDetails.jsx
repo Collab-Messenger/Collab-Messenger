@@ -26,10 +26,9 @@ const ChannelDetails = () => {
 
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
-    
-    // Clear existing messages when channelId changes
+
     setMessages([]);
-    
+
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -40,6 +39,7 @@ const ChannelDetails = () => {
         setMessages(messagesArray);
       } else {
         console.log("No messages found for this channel.");
+        setMessages([]);
       }
       setLoading(false);
     });
@@ -90,7 +90,7 @@ const ChannelDetails = () => {
   }, [userData]);
 
   const isOwner =
-    channelMembers && channelMembers.length > 0 && channelMembers[0] === userData.handle;
+    channelMembers && channelMembers.length > 0 && channelMembers[0] === userData?.handle;
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -251,7 +251,7 @@ const ChannelDetails = () => {
                   </button>
                 </div>
               ) : (
-                <>
+                <div>
                   <p>{msg.text}</p>
                   <small className="text-sm text-gray-500">
                     {new Date(msg.timestamp).toLocaleTimeString()}
@@ -264,7 +264,7 @@ const ChannelDetails = () => {
                       Edit
                     </button>
                   )}
-                </>
+                </div>
               )}
             </div>
           ))
