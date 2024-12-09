@@ -107,7 +107,7 @@ export const Teams = () => {
                     className="btn btn-ghost"
                     onClick={() => handleViewTeam(team.id)}
                   >
-                    Manage
+                    ⋮
                   </button>
                 </div>
 
@@ -120,7 +120,7 @@ export const Teams = () => {
                           className="channel p-2 bg-gray-100 rounded-lg mb-2 cursor-pointer"
                           onClick={() => handleViewChannel(team.id, channelId)}
                         >
-                          <h3 className="text-lg font-semibold">Name: {channelData.name}</h3>
+                          <h3 className="text-lg font-semibold">{channelData.name}</h3>
                           <p className="text-sm text-gray-600">{channelData.description}</p>
                         </div>
                       ))
