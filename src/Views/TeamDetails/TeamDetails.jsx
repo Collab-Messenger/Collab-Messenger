@@ -50,7 +50,7 @@ export const TeamDetails = () => {
         setTeam(teamData);
         setMembers(teamData.members || []);
       } else {
-        navigate('/teams');
+        navigate('/');
       }
     });
 
@@ -112,12 +112,12 @@ export const TeamDetails = () => {
           await changeOwner(teamId, newOwnerHandle);
         } else {
           await deleteTeam(teamId);
-          navigate('/teams');
+          navigate('/');
           return;
         }
       }
       await leaveTeam(teamId, userHandle);
-      navigate('/teams');
+      navigate('/');
     } catch (error) {
       console.error('Error leaving team:', error);
     }

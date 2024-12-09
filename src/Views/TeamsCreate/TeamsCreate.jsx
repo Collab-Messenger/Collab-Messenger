@@ -53,7 +53,7 @@ export function TeamsCreate() {
 
       const userTeamRef = ref(db, `users/${userHandle}/teams/${teamId}`);
       await set(userTeamRef, true);
-      navigate('/teams');
+      navigate('/');
       return;
     } catch (error) {
       console.error("Error creating team:", error.message);
