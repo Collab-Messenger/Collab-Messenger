@@ -1,33 +1,66 @@
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 250px;
-    height: 100%;
-    z-index: 200;
-    border-right-width: 1px;
-    border-right-style: solid;
-    border-right-color: rgb(228, 228, 228);
-    overflow-y: auto;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 250px;
+  height: 100%;
+  z-index: 200;
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: rgb(228, 228, 228);
+  overflow-y: auto;
+}
+
 .sidebar::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .sidebar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-  .sidebar button {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .fixedBottom {
-    bottom: 120px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+  padding: 10px 15px;
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Teams Button */
+.sidebar .teams-button {
+  font-weight: bold;
+}
+
+/* Nested Teams */
+.sidebar .team-item {
+  margin-left: 20px; /* Indentation for hierarchy */
+  padding-left: 10px;
+  border-left: 2px solid rgba(228, 228, 228, 0.5); /* Optional for a visual guide */
+}
+
+/* Nested Channels */
+.sidebar .channel-item {
+  margin-left: 40px; /* Further indentation for channels */
+  padding-left: 10px;
+  border-left: 2px solid rgba(200, 200, 200, 0.5); /* Optional for a visual guide */
+}
+
+.fixedBottom {
+  bottom: 120px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
