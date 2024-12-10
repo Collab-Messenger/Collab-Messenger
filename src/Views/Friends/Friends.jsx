@@ -60,7 +60,7 @@ export const Friends = () => {
       };
 
     return (
-        <div>
+        <div className="ml-40 self-center">
             {userData?.friends? (
                 <>
                 <h2>Friends List</h2>

@@ -15,44 +15,46 @@ export const Admin = () => {
   }, []);
 
 return (
-    <div>
-        <h1>Admin Panel</h1>
-        <h2>All Users</h2>
+    <div className="flex flex-col items-center mt-8 ">
+        <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+        <h2 className="text-xl mb-4">All Users</h2>
         {users.length > 0 ? (
-            <ul>
+            <ul className="w-full max-w-md">
                 {users.map((user) => (
-                    <li key={user.uid}>
-                        {user.handle}
-                        {user.isAdmin ? (
-                            <button
-                                className="btn btn-secondary"
-                                onClick={() => removeAdmin(user.handle)}
-                            >
-                                Remove Admin
-                            </button>
-                        ) : (
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => makeAdmin(user.handle)}
-                            >
-                                Make Admin
-                            </button>
-                        )}
-                        {user.isBlocked ? (
-                            <button
-                                className="btn btn-secondary"
-                                onClick={() => unblockUser(user.handle)}
-                            >
-                                Unblock User
-                            </button>
-                        ) : (
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => blockUser(user.handle)}
-                            >
-                                Block User
-                            </button>
-                        )}
+                    <li key={user.uid} className="flex justify-between items-center mb-2 p-2 border-b">
+                        <span>{user.handle}</span>
+                        <div className="flex space-x-2">
+                            {user.isAdmin ? (
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => removeAdmin(user.handle)}
+                                >
+                                    Remove Admin
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => makeAdmin(user.handle)}
+                                >
+                                    Make Admin
+                                </button>
+                            )}
+                            {user.isBlocked ? (
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => unblockUser(user.handle)}
+                                >
+                                    Unblock User
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => blockUser(user.handle)}
+                                >
+                                    Block User
+                                </button>
+                            )}
+                        </div>
                     </li>
                 ))}
             </ul>
