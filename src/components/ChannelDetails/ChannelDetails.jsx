@@ -235,20 +235,22 @@ const ChannelDetails = () => {
                     onChange={(e) =>
                       setEditingMessage({ ...editingMessage, text: e.target.value })
                     }
-                    className="input input-bordered w-full mb-2"
+                    className="input input-bordered w-full max-w-xs mb-2" // Adjust max-width for editing input field
                   />
-                  <button
-                    onClick={() => handleSaveMessage(msg.id)}
-                    className="btn btn-primary mr-2"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancelEditing}
-                    className="btn btn-secondary"
-                  >
-                    Cancel
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSaveMessage(msg.id)}
+                      className="btn btn-primary"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEditing}
+                      className="btn btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div>
@@ -261,7 +263,7 @@ const ChannelDetails = () => {
                       onClick={() => handleEditMessage(msg)}
                       className="ml-2"
                     >
-                      Edit
+                      ✎
                     </button>
                   )}
                 </div>
@@ -277,7 +279,7 @@ const ChannelDetails = () => {
           placeholder="Type your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          className="input input-bordered w-full"
+          className="input input-bordered w-full max-w-xs" // Limit the max width of the input field
         />
         <button type="submit" className="btn btn-primary">
           Send
