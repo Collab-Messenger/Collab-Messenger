@@ -1,33 +1,51 @@
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 250px;
-    height: 100%;
-    z-index: 200;
-    border-right-width: 1px;
-    border-right-style: solid;
-    border-right-color: rgb(228, 228, 228);
-    overflow-y: auto;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 250px;
+  height: 100%;
+  z-index: 200;
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: rgb(228, 228, 228);
+  overflow-y: auto;
+}
+
 .sidebar::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .sidebar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-  .sidebar button {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .fixedBottom {
-    bottom: 120px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.fixedBottom {
+  position: absolute;
+  bottom: 120px;
+  width: 100%;
+  display: flex;
+  justify-content: center; /* Center the container horizontally */
+  align-items: center; /* Center the container vertically */
+  padding: 0 10px; /* Optional padding to account for width adjustments */
+}
+
+.fixedBottom .btn {
+  width: 50px; /* Set a fixed width for the button */
+  height: 50px; /* Set a fixed height for the button */
+  background-color: #007bff; /* Background color for the button */
+  color: white; /* Text color for the button */
+  border-radius: 50%; /* Make the button round */
+  font-size: 24px; /* Adjust the font size for visual appeal */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+

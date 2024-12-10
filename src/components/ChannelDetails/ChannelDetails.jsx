@@ -3,7 +3,13 @@ import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, onValue, off, get, update } from "firebase/database";
 import { db } from "../../config/firebase-config";
-import { sendMessageChannel, leaveChannel, deleteChannel, addMemberToChannel, removeMemberFromChannel } from "../../services/channel.service";
+import {
+  sendMessageChannel,
+  leaveChannel,
+  deleteChannel,
+  addMemberToChannel,
+  removeMemberFromChannel,
+} from "../../services/channel.service";
 
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
@@ -21,6 +27,8 @@ const ChannelDetails = () => {
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
 
+    setMessages([]);
+
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -29,6 +37,9 @@ const ChannelDetails = () => {
           ...message,
         }));
         setMessages(messagesArray);
+      } else {
+        console.log("No messages found for this channel.");
+        setMessages([]);
       }
       setLoading(false);
     });
@@ -78,23 +89,21 @@ const ChannelDetails = () => {
     }
   }, [userData]);
 
-  const isOwner = channelMembers && channelMembers.length > 0 && channelMembers[0] === userData.handle;
+  const isOwner =
+    channelMembers && channelMembers.length > 0 && channelMembers[0] === userData?.handle;
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-
     if (!userData || !userData.handle) {
       console.error("User data is not available or handle is missing");
       return;
     }
-
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
         sender: userData.handle,
         timestamp: new Date().toISOString(),
       };
-
       await sendMessageChannel(teamId, channelId, message);
       setNewMessage("");
     }
@@ -111,11 +120,12 @@ const ChannelDetails = () => {
         await deleteChannel(teamId, channelId);
       }
 
-      navigate("/teams");
+      navigate("/");
     } catch (error) {
       console.error("Error leaving channel:", error);
     }
   };
+
   const handleKickMember = async (member) => {
     if (!isOwner) return;
     try {
@@ -124,7 +134,6 @@ const ChannelDetails = () => {
       console.error("Error kicking member from channel:", error);
     }
   };
-  
 
   const handleEditMessage = (msg) => {
     setEditingMessage(msg);
@@ -146,7 +155,6 @@ const ChannelDetails = () => {
 
   const handleInvite = async () => {
     if (!invitee) return;
-
     try {
       await addMemberToChannel(teamId, channelId, invitee);
       setInvitee("");
@@ -156,16 +164,12 @@ const ChannelDetails = () => {
     }
   };
 
-
   if (!isUserDataLoaded) {
     return <div>Loading user data...</div>;
   }
 
   return (
     <div className="chat-room">
-      <button onClick={() => navigate("/teams")} className="btn btn-secondary mb-4">
-        Back
-      </button>
       <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
 
       <div className="channel-members mb-4">
@@ -178,7 +182,7 @@ const ChannelDetails = () => {
                 {isOwner && member !== userData.handle && (
                   <button
                     onClick={() => handleKickMember(member)}
-                   className="ml-2"
+                    className="ml-2"
                   >
                     Kick
                   </button>
@@ -200,13 +204,14 @@ const ChannelDetails = () => {
             className="select select-bordered w-full"
           >
             <option value="">Select a member</option>
-            {teamMembers.map((member, index) => (
-              !channelMembers.includes(member) && (
-                <option key={index} value={member}>
-                  {member}
-                </option>
-              )
-            ))}
+            {teamMembers.map(
+              (member, index) =>
+                !channelMembers.includes(member) && (
+                  <option key={index} value={member}>
+                    {member}
+                  </option>
+                )
+            )}
           </select>
           <button onClick={handleInvite} className="btn btn-primary">
             Add
@@ -246,7 +251,7 @@ const ChannelDetails = () => {
                   </button>
                 </div>
               ) : (
-                <>
+                <div>
                   <p>{msg.text}</p>
                   <small className="text-sm text-gray-500">
                     {new Date(msg.timestamp).toLocaleTimeString()}
@@ -259,7 +264,7 @@ const ChannelDetails = () => {
                       Edit
                     </button>
                   )}
-                </>
+                </div>
               )}
             </div>
           ))
