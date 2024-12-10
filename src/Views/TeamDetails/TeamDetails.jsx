@@ -159,7 +159,6 @@ export const TeamDetails = () => {
         {isOwner ? 'You are the owner' : `Owner: ${team.owner}`}
       </h2>
   
-      {/* Button Container */}
       <div className={styles.buttonContainer}>
         <button
           className={styles.button}

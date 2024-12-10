@@ -120,7 +120,7 @@ const ChannelDetails = () => {
         await deleteChannel(teamId, channelId);
       }
 
-      navigate("/teams");
+      navigate("/");
     } catch (error) {
       console.error("Error leaving channel:", error);
     }
