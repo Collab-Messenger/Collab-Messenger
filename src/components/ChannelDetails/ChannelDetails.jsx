@@ -18,6 +18,7 @@ const ChannelDetails = () => {
   const [allMessages, setMessages] = useState([]);
   const [channelMembers, setChannelMembers] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [channelInfo, setChannelInfo] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(true);
   const [editingMessage, setEditingMessage] = useState(null);
   const [invitee, setInvitee] = useState("");
@@ -90,6 +91,24 @@ const ChannelDetails = () => {
       unsubscribe();
     };
   }, [teamId]);
+
+  useEffect(() => {
+    const channelRef = ref(db, `teams/${teamId}/channels/${channelId}`);
+    
+    const unsubscribe = onValue(channelRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setChannelInfo({
+          name: data.name,
+          description: data.description,
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [teamId, channelId]);
 
   useEffect(() => {
     if (userData) {
@@ -173,10 +192,17 @@ const ChannelDetails = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8" style={{ marginTop: '20px' }}>
+    <div className="flex flex-col md:flex-row gap-8" style={{ marginTop: '10px' }}>
       {/* Left: Member Controls */}
       <div className="member-controls md:w-2/5" style={{ marginLeft: '50px', marginTop: '100px'}}>
+      
+        {/* Channel Information */}
+        <div className="channel-info mb-4">
+          <h1 className="text-3xl font-bold" style={{marginBottom: '10px'}}>{channelInfo.name}</h1>
+          <p className="text-lg" style={{marginBottom: '10px'}}>{channelInfo.description}</p>
+        </div>
         <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
+
 
         <div className="channel-members mb-4">
           <h3 className="text-lg font-semibold">Members:</h3>
