@@ -61,7 +61,7 @@ export const Friends = () => {
                       <div key={index} className="flex items-center space-x-10">
                         <li>
                           <div className="relative">
-                            {friend?.isOnline ? (
+                            {/* {friend?.isOnline ? (
                               <div className="avatar online placeholder">
                                 <div className="bg-neutral text-neutral-content w-16 rounded-full">
                                   <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
@@ -73,7 +73,7 @@ export const Friends = () => {
                                   <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
                                 </div>
                               </div>
-                            )}
+                            )} */}
                           </div>
                         </li>
                         <button
