@@ -48,7 +48,7 @@ export const Friends = () => {
       };
 
       return (
-        <div>
+        <div className="ml-40 self-center">
          {selectedChatRoomId && currentFriend ? (
             <ChatRoom chatRoomId={selectedChatRoomId} friend={currentFriend} onBack={handleBack} />
           ) : (

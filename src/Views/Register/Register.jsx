@@ -53,7 +53,8 @@ export const Register = () => {
     };
 
     return (
-        <div className="register-view">
+        <div className="ml-[800px] self-center">
+            <h1 className="text-2xl font-bold mb-4">Register</h1>
             <label className="input input-bordered flex items-center gap-2 mt-5">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +93,7 @@ export const Register = () => {
                 <input value={user.password} onChange={updateUser('password')} type="password" className="grow" />
             </label>
             {(user.email.includes('@') && user.handle && user.password) && (
-                <button className="register mt-5" onClick={register}>Register</button>
+                <button className="btn btn-primary mt-3" onClick={register}>Register</button>
             )}
         </div>
     );
