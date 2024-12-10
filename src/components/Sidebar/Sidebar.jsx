@@ -246,12 +246,6 @@ const Sidebar = () => {
           <button className="btn join-item" onClick={() => navigate("/videoCall")}>
             Video Call
           </button>
-          <button className="btn join-item" onClick={() => navigate("/ChatRoom/:id")}>
-            ChatRoom
-          </button>
-          <button className="btn join-item" onClick={() => navigate("ChatRoomList")}>
-            Chat Lists
-          </button>
         </div>
 
         <div className={styles.fixedBottom}></div>
