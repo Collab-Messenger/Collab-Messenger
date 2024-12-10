@@ -12,6 +12,7 @@ const Sidebar = () => {
   const [channels, setChannels] = useState({});
   const [visibleChannels, setVisibleChannels] = useState({});
   const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
+  const [listeners, setListeners] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,8 +22,11 @@ const Sidebar = () => {
     let userHandle = null;
 
     const fetchUserHandleAndTeams = async () => {
+
       const handleSnapshot = await get(userHandleRef);
       const allUsers = handleSnapshot.val();
+
+
       userHandle = Object.keys(allUsers).find(
         (handle) => allUsers[handle].uid === user.uid
       );
@@ -35,30 +39,52 @@ const Sidebar = () => {
           const teamData = snapshot.val();
           const members = teamData?.members || {};
 
+
           if (Object.values(members).includes(userHandle)) {
             setTeams((prevTeams) => {
               const existingTeam = prevTeams.find((team) => team.id === teamId);
               if (existingTeam) {
-
                 return prevTeams.map((team) =>
                   team.id === teamId ? { id: teamId, ...teamData } : team
                 );
               }
+
               return [...prevTeams, { id: teamId, ...teamData }];
             });
+
 
             const teamChannelsRef = ref(db, `teams/${teamId}/channels`);
             const channelsSnapshot = await get(teamChannelsRef);
             if (channelsSnapshot.exists()) {
               const teamChannels = channelsSnapshot.val();
+              const filteredChannels = Object.fromEntries(
+                Object.entries(teamChannels).filter(([channelId, channelData]) => 
+                  channelData.members.includes(userHandle)
+                )
+              );
               setChannels((prevChannels) => ({
                 ...prevChannels,
-                [teamId]: teamChannels,
+                [teamId]: filteredChannels,
               }));
             }
 
-           
-            onChildAdded(teamChannelsRef, (snapshot) => {
+
+            const onChannelAdded = (snapshot) => {
+              const channelId = snapshot.key;
+              const channelData = snapshot.val();
+
+              if (channelData.members && channelData.members.includes(userHandle)) {
+                setChannels((prevChannels) => ({
+                  ...prevChannels,
+                  [teamId]: {
+                    ...prevChannels[teamId],
+                    [channelId]: channelData,
+                  },
+                }));
+              }
+            };
+
+            const onChannelChanged = (snapshot) => {
               const channelId = snapshot.key;
               const channelData = snapshot.val();
 
@@ -72,32 +98,25 @@ const Sidebar = () => {
                   },
                 }));
               }
-            });
+            };
 
-            onChildChanged(teamChannelsRef, (snapshot) => {
-              const channelId = snapshot.key;
-              const channelData = snapshot.val();
-
-              if (channelData.members && channelData.members.includes(userHandle)) {
-                setChannels((prevChannels) => ({
-                  ...prevChannels,
-                  [teamId]: {
-                    ...prevChannels[teamId],
-                    [channelId]: channelData,
-                  },
-                }));
-              }
-            });
-
-            onChildRemoved(teamChannelsRef, (snapshot) => {
+            const onChannelRemoved = (snapshot) => {
               const channelId = snapshot.key;
               setChannels((prevChannels) => {
                 const updatedChannels = { ...prevChannels };
                 delete updatedChannels[teamId][channelId];
                 return updatedChannels;
               });
-            });
+            };
+
+            const channelListeners = [
+              onChildAdded(teamChannelsRef, onChannelAdded),
+              onChildChanged(teamChannelsRef, onChannelChanged),
+              onChildRemoved(teamChannelsRef, onChannelRemoved),
+            ];
+            setListeners((prevListeners) => [...prevListeners, ...channelListeners]);
           } else {
+
             setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
             setChannels((prevChannels) => {
               const updatedChannels = { ...prevChannels };
@@ -107,27 +126,34 @@ const Sidebar = () => {
           }
         };
 
-        onChildAdded(teamsRef, updateTeams);
-        onChildChanged(teamsRef, updateTeams);
-        onChildRemoved(teamsRef, (snapshot) => {
-          const teamId = snapshot.key;
-          setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
-          setChannels((prevChannels) => {
-            const updatedChannels = { ...prevChannels };
-            delete updatedChannels[teamId];
-            return updatedChannels;
-          });
-        });
+        // Listeners for teams
+        const teamListeners = [
+          onChildAdded(teamsRef, updateTeams),
+          onChildChanged(teamsRef, updateTeams),
+          onChildRemoved(teamsRef, (snapshot) => {
+            const teamId = snapshot.key;
+            setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
+            setChannels((prevChannels) => {
+              const updatedChannels = { ...prevChannels };
+              delete updatedChannels[teamId];
+              return updatedChannels;
+            });
+          }),
+        ];
+        setListeners((prevListeners) => [...prevListeners, ...teamListeners]);
       }
     };
 
     fetchUserHandleAndTeams();
 
     return () => {
-      const teamsRef = ref(db, "teams");
-      teamsRef.off();
+      listeners.forEach((listener) => {
+        if (listener && typeof listener.off === 'function') {
+          listener.off();
+        }
+      });
     };
-  }, [user]);
+  }, [user, listeners]);
 
   const handleCreateTeam = () => {
     navigate("/createTeam");
