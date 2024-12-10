@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
+import { ref, onValue, push, get } from "firebase/database"; // Import ref, onValue, push, and get
+import { db } from "../../config/firebase-config.js"; // Ensure this points to your Firebase configuration
 import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ref, onValue, off, get, update } from "firebase/database";
-import { db } from "../../config/firebase-config";
 import {
   sendMessageChannel,
   leaveChannel,
@@ -32,20 +32,28 @@ const ChannelDetails = () => {
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const messagesArray = Object.entries(data).map(([id, message]) => ({
-          id,
-          ...message,
-        }));
-        setMessages(messagesArray);
+        const messagesArray = Object.entries(data).map(async ([id, message]) => {
+          const senderRef = ref(db, `teams/${teamId}/channels/${channelId}/messages/${id}/sender`);
+          const senderSnapshot = await get(senderRef);
+          const senderName = senderSnapshot.exists() ? senderSnapshot.val() : "Unknown";
+          return {
+            id,
+            ...message,
+            senderName,
+          };
+        });
+
+        Promise.all(messagesArray).then((resolvedMessages) => {
+          setMessages(resolvedMessages);
+        });
       } else {
-        console.log("No messages found for this channel.");
         setMessages([]);
       }
       setLoading(false);
     });
 
     return () => {
-      off(messagesRef);
+      unsubscribe();
     };
   }, [teamId, channelId]);
 
@@ -62,7 +70,7 @@ const ChannelDetails = () => {
     });
 
     return () => {
-      off(membersRef);
+      unsubscribe();
     };
   }, [teamId, channelId]);
 
@@ -79,7 +87,7 @@ const ChannelDetails = () => {
     });
 
     return () => {
-      off(teamMembersRef);
+      unsubscribe();
     };
   }, [teamId]);
 
@@ -94,10 +102,7 @@ const ChannelDetails = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!userData || !userData.handle) {
-      console.error("User data is not available or handle is missing");
-      return;
-    }
+    if (!userData || !userData.handle) return;
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
@@ -160,7 +165,6 @@ const ChannelDetails = () => {
       setInvitee("");
     } catch (error) {
       console.error("Error inviting member:", error);
-      alert(error.message);
     }
   };
 
@@ -169,125 +173,131 @@ const ChannelDetails = () => {
   }
 
   return (
-    <div className="chat-room">
-      <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
+    <div className="flex flex-col md:flex-row gap-8" style={{ marginTop: '20px' }}>
+      {/* Left: Member Controls */}
+      <div className="member-controls md:w-2/5" style={{ marginLeft: '50px', marginTop: '100px'}}>
+        <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
 
-      <div className="channel-members mb-4">
-        <h3 className="text-lg font-semibold">Members:</h3>
-        {channelMembers.length > 0 ? (
-          <ul className="list-disc list-inside">
-            {channelMembers.map((member, index) => (
-              <li key={index}>
-                {member}
-                {isOwner && member !== userData.handle && (
-                  <button
-                    onClick={() => handleKickMember(member)}
-                    className="ml-2"
-                  >
-                    Kick
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No members in this channel.</p>
-        )}
-      </div>
+        <div className="channel-members mb-4">
+          <h3 className="text-lg font-semibold">Members:</h3>
+          {channelMembers.length > 0 ? (
+            <ul className="list-disc list-inside">
+              {channelMembers.map((member, index) => (
+                <li key={index}>
+                  {member}
+                  {isOwner && member !== userData.handle && (
+                    <button
+                      onClick={() => handleKickMember(member)}
+                      className="ml-2 btn btn-sm btn-danger"
+                    >
+                      Kick
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No members in this channel.</p>
+          )}
+        </div>
 
-      <div className="invite-member mt-4">
-        <h3 className="text-lg font-semibold">Add Team Member:</h3>
-        <div className="flex gap-2 items-center">
-          <select
-            value={invitee}
-            onChange={(e) => setInvitee(e.target.value)}
-            className="select select-bordered w-full"
-          >
-            <option value="">Select a member</option>
-            {teamMembers.map(
-              (member, index) =>
-                !channelMembers.includes(member) && (
-                  <option key={index} value={member}>
-                    {member}
-                  </option>
-                )
-            )}
-          </select>
-          <button onClick={handleInvite} className="btn btn-primary">
-            Add
+        <div className="invite-member mt-4">
+          <h3 className="text-lg font-semibold">Add Team Member:</h3>
+          <div className="flex gap-2 items-center">
+            <select
+              value={invitee}
+              onChange={(e) => setInvitee(e.target.value)}
+              className="select select-bordered w-full"
+            >
+              <option value="">Select a member</option>
+              {teamMembers.map(
+                (member, index) =>
+                  !channelMembers.includes(member) && (
+                    <option key={index} value={member}>
+                      {member}
+                    </option>
+                  )
+              )}
+            </select>
+            <button onClick={handleInvite} className="btn btn-primary">
+              Add
+            </button>
+          </div>
+        </div>
+
+        <div className="leave-channel mt-4">
+          <button onClick={handleLeaveChannel} className="btn btn-danger">
+            Leave Channel
           </button>
         </div>
       </div>
 
-      <div className="messages space-y-4">
-        {loading ? (
-          <p>Loading messages...</p>
-        ) : allMessages.length === 0 ? (
-          <p>No messages yet. Start the conversation!</p>
-        ) : (
-          allMessages.map((msg) => (
-            <div key={msg.id} className="message p-4 rounded-lg shadow">
-              {editingMessage?.id === msg.id ? (
-                <div>
-                  <input
-                    type="text"
-                    value={editingMessage.text}
-                    onChange={(e) =>
-                      setEditingMessage({ ...editingMessage, text: e.target.value })
-                    }
-                    className="input input-bordered w-full mb-2"
-                  />
-                  <button
-                    onClick={() => handleSaveMessage(msg.id)}
-                    className="btn btn-primary mr-2"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancelEditing}
-                    className="btn btn-secondary"
-                  >
-                    Cancel
-                  </button>
+      {/* Right: Chat Room */}
+      <div className="chat-room md:w-3/5" style={{ marginLeft: '300px', marginTop: '100px'}}>
+        <div
+          className="chat-container"
+          style={{
+            width: "100%",
+            maxHeight: "70vh",
+            overflowY: "auto",
+            padding: "10px",
+            marginBottom: "20px",
+          }}
+        >
+          {allMessages.length === 0 ? (
+            <p>No messages yet. Start the conversation!</p>
+          ) : (
+            allMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`chat ${msg.sender === userData.handle ? "chat-end" : "chat-start"}`}
+                style={{
+                  marginBottom: "10px",
+                  display: "flex",
+                  flexDirection: msg.sender === userData.handle ? "row-reverse" : "row",
+                }}
+              >
+                <div className="chat-image avatar">
+                  <div className="w-12 h-12 rounded-full">
+                    <img
+                      alt="User Avatar"
+                      src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <div>
-                  <p>{msg.text}</p>
-                  <small className="text-sm text-gray-500">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </small>
-                  {msg.sender === userData.handle && (
-                    <button
-                      onClick={() => handleEditMessage(msg)}
-                      className="ml-2"
-                    >
-                      Edit
-                    </button>
-                  )}
+                <div className="chat-header">
+                  <time className="text-xs opacity-50">{new Date(msg.timestamp).toLocaleTimeString()}</time>
+                  <div className="text-xs opacity-50" style={{ marginTop: "2px" }}>{msg.senderName}</div>
                 </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+                <div className="chat-bubble" style={{ fontSize: "1.2rem", padding: "10px 15px" }}>
+                  {msg.text}
+                </div>
+                <div className="chat-footer opacity-50">
+                  {msg.sender === userData.handle ? "Sent" : "Received"}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-      <form onSubmit={handleSendMessage} className="message-form mt-4 flex gap-2">
-        <input
-          type="text"
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          className="input input-bordered w-full"
-        />
-        <button type="submit" className="btn btn-primary">
-          Send
-        </button>
-      </form>
-
-      <div className="leave-channel mt-4">
-        <button onClick={handleLeaveChannel} className="btn btn-danger">
-          Leave Channel
-        </button>
+        <form onSubmit={handleSendMessage} className="message-form" style={{ width: "100%" }}>
+          <input
+            type="text"
+            placeholder="Type your message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            className="input input-bordered"
+            style={{
+              fontSize: "1.2rem",
+              padding: "10px",
+              width: "100%",
+              marginBottom: "10px",
+            }}
+          />
+          <button type="submit" className="btn btn-primary" style={{ width: "100%" }}>
+            Send
+          </button>
+        </form>
       </div>
     </div>
   );
