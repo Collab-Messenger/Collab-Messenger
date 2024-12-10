@@ -89,8 +89,8 @@ const Header = () => {
                         {/*<div className="w-10 rounded-full flex items-center justify-center">*/}
                             {userData?.isOnline && (
                                 <div className="placeholder">
-                                    <div className="rounded-full">
-                                        <span className="text-xl">{nameInitials}</span>
+                                    <div className="rounded-full" >
+                                        <span className="text-l">{nameInitials}</span>
                                     </div>
                                 </div>
                             )}
