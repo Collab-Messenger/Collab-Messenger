@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ref, onValue, push } from "firebase/database"; // Import ref, onValue, and push
+import { ref, onValue, push, get } from "firebase/database"; // Import ref, onValue, push, and get
 import { db } from "../../config/firebase-config.js"; // Ensure this points to your Firebase configuration
 import { AppContext } from "../../store/app-context";
 import { useParams, useNavigate } from "react-router-dom";
@@ -32,11 +32,20 @@ const ChannelDetails = () => {
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const messagesArray = Object.entries(data).map(([id, message]) => ({
-          id,
-          ...message,
-        }));
-        setMessages(messagesArray);
+        const messagesArray = Object.entries(data).map(async ([id, message]) => {
+          const senderRef = ref(db, `teams/${teamId}/channels/${channelId}/messages/${id}/sender`);
+          const senderSnapshot = await get(senderRef);
+          const senderName = senderSnapshot.exists() ? senderSnapshot.val() : "Unknown";
+          return {
+            id,
+            ...message,
+            senderName,
+          };
+        });
+
+        Promise.all(messagesArray).then((resolvedMessages) => {
+          setMessages(resolvedMessages);
+        });
       } else {
         setMessages([]);
       }
@@ -224,7 +233,7 @@ const ChannelDetails = () => {
       </div>
 
       {/* Right: Chat Room */}
-      <div className="chat-room md:w-3/5" style={{ marginLeft: '350px', marginTop: '100px'}}>
+      <div className="chat-room md:w-3/5" style={{ marginLeft: '300px', marginTop: '100px'}}>
         <div
           className="chat-container"
           style={{
@@ -258,6 +267,7 @@ const ChannelDetails = () => {
                 </div>
                 <div className="chat-header">
                   <time className="text-xs opacity-50">{new Date(msg.timestamp).toLocaleTimeString()}</time>
+                  <div className="text-xs opacity-50" style={{ marginTop: "2px" }}>{msg.senderName}</div>
                 </div>
                 <div className="chat-bubble" style={{ fontSize: "1.2rem", padding: "10px 15px" }}>
                   {msg.text}
