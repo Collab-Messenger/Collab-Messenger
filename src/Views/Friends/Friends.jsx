@@ -76,6 +76,7 @@ export const Friends = () => {
                             )} */}
                           </div>
                         </li>
+                        <li>{friend}</li>
                         <button
                           className="btn btn-primary"
                           onClick={() => handleStartChat(friend)}
