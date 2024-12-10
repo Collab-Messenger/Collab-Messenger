@@ -1,60 +1,80 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../../store/app-context";
-import { getUserByUid } from "../../services/user.service";
-import { fetchMessagesForChannel } from "../../services/channel.service";
-import { getTeams } from "../../services/teams.service";
+import { ref, onChildAdded, onChildRemoved, onChildChanged, get } from "firebase/database";
+import { db } from "../../config/firebase-config";
 import styles from "./Sidebar.module.css";
 import { ToggleMode } from "../ToggleMode/ToggleMode";
 
 const Sidebar = () => {
-  const { user } = useContext(AppContext);
+  const { user } = useContext(AppContext); // Access user from context
   const [teams, setTeams] = useState([]);
   const [visibleChannels, setVisibleChannels] = useState({});
   const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
-  const [messages, setMessages] = useState([]); // State to store messages
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserAndTeams = async () => {
-      if (user) {
-        try {
-          const userData = await getUserByUid(user.uid);
-          if (userData && userData.handle) {
-            const teamsData = await getTeams(userData.handle);
+    if (!user || !user.uid) return;
 
-            const userTeams = Object.values(teamsData).filter((team) =>
-              team.members && team.members.includes(userData.handle)
-            );
+    const userHandleRef = ref(db, `users`);
+    let userHandle = null;
 
-            const filteredTeams = userTeams.map((team) => {
-              if (team.channels) {
-                const filteredChannels = Object.entries(team.channels).filter(([channelId, channelData]) => {
-                  return channelData.members && channelData.members.includes(userData.handle);
-                });
+    const fetchUserHandleAndTeams = async () => {
+      // Fetch the user handle from Firebase
+      const handleSnapshot = await get(userHandleRef);
+      const allUsers = handleSnapshot.val();
 
-                return {
-                  ...team,
-                  channels: filteredChannels.reduce((acc, [channelId, channelData]) => {
-                    acc[channelId] = channelData;
-                    return acc;
-                  }, {}),
-                };
+      // Find the handle matching the UID
+      userHandle = Object.keys(allUsers).find(
+        (handle) => allUsers[handle].uid === user.uid
+      );
+
+      if (userHandle) {
+        const teamsRef = ref(db, "teams");
+
+        const updateTeams = async (snapshot) => {
+          const teamId = snapshot.key;
+          const teamData = snapshot.val();
+          const members = teamData?.members || {};
+
+          // Check if the team is valid and the user is a member
+          if (Object.values(members).includes(userHandle)) {
+            setTeams((prevTeams) => {
+              const existingTeam = prevTeams.find((team) => team.id === teamId);
+              if (existingTeam) {
+                // Update existing team
+                return prevTeams.map((team) =>
+                  team.id === teamId ? { id: teamId, ...teamData } : team
+                );
               }
-              return team;
+              // Add new team
+              return [...prevTeams, { id: teamId, ...teamData }];
             });
-
-            setTeams(filteredTeams || []);
           } else {
-            console.error("User handle is missing or undefined.");
+            // Remove invalid team
+            setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
           }
-        } catch (error) {
-          console.error("Error fetching user or teams:", error);
-        }
+        };
+
+        const removeTeam = (snapshot) => {
+          const teamId = snapshot.key;
+          setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
+        };
+
+        // Listeners
+        onChildAdded(teamsRef, updateTeams);
+        onChildChanged(teamsRef, updateTeams);
+        onChildRemoved(teamsRef, removeTeam);
       }
     };
 
-    fetchUserAndTeams();
+    fetchUserHandleAndTeams();
+
+    // Cleanup function
+    return () => {
+      const teamsRef = ref(db, "teams");
+      teamsRef.off(); // Detach listeners
+    };
   }, [user]);
 
   const handleCreateTeam = () => {
@@ -65,20 +85,8 @@ const Sidebar = () => {
     navigate(`/teams/${teamId}`);
   };
 
-  const handleViewChannel = async (teamId, channelId) => {
-    try {
-      // Clear the current messages before fetching new ones
-      setMessages([]);
-
-      // Fetch messages for the new channel
-      const newMessages = await fetchMessagesForChannel(teamId, channelId);
-      setMessages(newMessages);
-
-      // Navigate to the new channel
-      navigate(`/teams/${teamId}/channels/${channelId}`);
-    } catch (error) {
-      console.error("Error switching channels:", error);
-    }
+  const handleViewChannel = (teamId, channelId) => {
+    navigate(`/teams/${teamId}/channels/${channelId}`);
   };
 
   const toggleChannelsVisibility = (teamId) => {
@@ -157,8 +165,6 @@ const Sidebar = () => {
           <button className="btn join-item" onClick={handleCreateTeam}>
             Create Team
           </button>
-          <button className="btn join-item">Channel 1</button>
-          <button className="btn join-item">Channel 2</button>
           <button className="btn join-item" onClick={() => navigate("/videoCall")}>
             Video Call
           </button>
@@ -168,7 +174,6 @@ const Sidebar = () => {
           <button className="btn join-item" onClick={() => navigate("ChatRoomList")}>
             Chat Lists
           </button>
-          <button className="btn join-item">Channel 3</button>
         </div>
 
         <div className={styles.fixedBottom}></div>
