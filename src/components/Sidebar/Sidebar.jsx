@@ -7,8 +7,9 @@ import styles from "./Sidebar.module.css";
 import { ToggleMode } from "../ToggleMode/ToggleMode";
 
 const Sidebar = () => {
-  const { user } = useContext(AppContext); // Access user from context
+  const { user } = useContext(AppContext);
   const [teams, setTeams] = useState([]);
+  const [channels, setChannels] = useState({});
   const [visibleChannels, setVisibleChannels] = useState({});
   const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
   const navigate = useNavigate();
@@ -20,11 +21,8 @@ const Sidebar = () => {
     let userHandle = null;
 
     const fetchUserHandleAndTeams = async () => {
-      // Fetch the user handle from Firebase
       const handleSnapshot = await get(userHandleRef);
       const allUsers = handleSnapshot.val();
-
-      // Find the handle matching the UID
       userHandle = Object.keys(allUsers).find(
         (handle) => allUsers[handle].uid === user.uid
       );
@@ -37,43 +35,97 @@ const Sidebar = () => {
           const teamData = snapshot.val();
           const members = teamData?.members || {};
 
-          // Check if the team is valid and the user is a member
           if (Object.values(members).includes(userHandle)) {
             setTeams((prevTeams) => {
               const existingTeam = prevTeams.find((team) => team.id === teamId);
               if (existingTeam) {
-                // Update existing team
+
                 return prevTeams.map((team) =>
                   team.id === teamId ? { id: teamId, ...teamData } : team
                 );
               }
-              // Add new team
               return [...prevTeams, { id: teamId, ...teamData }];
             });
+
+            const teamChannelsRef = ref(db, `teams/${teamId}/channels`);
+            const channelsSnapshot = await get(teamChannelsRef);
+            if (channelsSnapshot.exists()) {
+              const teamChannels = channelsSnapshot.val();
+              setChannels((prevChannels) => ({
+                ...prevChannels,
+                [teamId]: teamChannels,
+              }));
+            }
+
+           
+            onChildAdded(teamChannelsRef, (snapshot) => {
+              const channelId = snapshot.key;
+              const channelData = snapshot.val();
+
+
+              if (channelData.members && channelData.members.includes(userHandle)) {
+                setChannels((prevChannels) => ({
+                  ...prevChannels,
+                  [teamId]: {
+                    ...prevChannels[teamId],
+                    [channelId]: channelData,
+                  },
+                }));
+              }
+            });
+
+            onChildChanged(teamChannelsRef, (snapshot) => {
+              const channelId = snapshot.key;
+              const channelData = snapshot.val();
+
+              if (channelData.members && channelData.members.includes(userHandle)) {
+                setChannels((prevChannels) => ({
+                  ...prevChannels,
+                  [teamId]: {
+                    ...prevChannels[teamId],
+                    [channelId]: channelData,
+                  },
+                }));
+              }
+            });
+
+            onChildRemoved(teamChannelsRef, (snapshot) => {
+              const channelId = snapshot.key;
+              setChannels((prevChannels) => {
+                const updatedChannels = { ...prevChannels };
+                delete updatedChannels[teamId][channelId];
+                return updatedChannels;
+              });
+            });
           } else {
-            // Remove invalid team
             setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
+            setChannels((prevChannels) => {
+              const updatedChannels = { ...prevChannels };
+              delete updatedChannels[teamId];
+              return updatedChannels;
+            });
           }
         };
 
-        const removeTeam = (snapshot) => {
-          const teamId = snapshot.key;
-          setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
-        };
-
-        // Listeners
         onChildAdded(teamsRef, updateTeams);
         onChildChanged(teamsRef, updateTeams);
-        onChildRemoved(teamsRef, removeTeam);
+        onChildRemoved(teamsRef, (snapshot) => {
+          const teamId = snapshot.key;
+          setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
+          setChannels((prevChannels) => {
+            const updatedChannels = { ...prevChannels };
+            delete updatedChannels[teamId];
+            return updatedChannels;
+          });
+        });
       }
     };
 
     fetchUserHandleAndTeams();
 
-    // Cleanup function
     return () => {
       const teamsRef = ref(db, "teams");
-      teamsRef.off(); // Detach listeners
+      teamsRef.off();
     };
   }, [user]);
 
@@ -132,8 +184,8 @@ const Sidebar = () => {
                         </div>
                         {visibleChannels[team.id] && (
                           <ul>
-                            {team.channels && Object.entries(team.channels).length > 0 ? (
-                              Object.entries(team.channels).map(([channelId, channelData]) => (
+                            {channels[team.id] && Object.entries(channels[team.id]).length > 0 ? (
+                              Object.entries(channels[team.id]).map(([channelId, channelData]) => (
                                 <li key={channelId} className="channel-item">
                                   <button
                                     className="btn btn-sm btn-outline"
