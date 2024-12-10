@@ -36,7 +36,7 @@ const CreateChannel = ({ teamId, teamOwner, onChannelCreated }) => {
   };
 
   return (
-    <div className="create-channel p-4 bg-white shadow-lg rounded-lg max-w-lg mx-auto mt-8">
+    <div className="create-channel p-4 bg-grey shadow-lg rounded-lg max-w-lg mx-auto mt-8">
       <h2 className="text-2xl font-semibold mb-4">Create a New Channel</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group mb-4">
