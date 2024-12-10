@@ -90,7 +90,7 @@ const Header = () => {
                             {userData?.isOnline && (
                                 <div className="placeholder">
                                     <div className="rounded-full" >
-                                        <span className="text-l">{nameInitials}</span>
+                                        <span className="text-xl/4">{nameInitials}</span>
                                     </div>
                                 </div>
                             )}
