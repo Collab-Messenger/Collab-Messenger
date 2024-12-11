@@ -47,57 +47,57 @@ export const Friends = () => {
         setCurrentFriend(null);
       };
 
-      return (
-        <div className="ml-40 self-center">
-         {selectedChatRoomId && currentFriend ? (
-            <ChatRoom chatRoomId={selectedChatRoomId} friend={currentFriend} onBack={handleBack} />
-          ) : (
-            <div>
-              {userData?.friends ? (
-                <>
-                  <h2>Friends List</h2>
-                  <ul>
-                    {userData.friends.map((friend, index) => (
-                      <div key={index} className="flex items-center space-x-10">
-                        <li>
-                          <div className="relative">
-                            {/* {friend?.isOnline ? (
-                              <div className="avatar online placeholder">
-                                <div className="bg-neutral text-neutral-content w-16 rounded-full">
-                                  <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="avatar offline placeholder">
-                                <div className="bg-neutral text-neutral-content w-16 rounded-full">
-                                  <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
-                                </div>
-                              </div>
-                            )} */}
+    return (
+      <div className="ml-[500px] self-center">
+        {selectedChatRoomId && currentFriend ? (
+          <ChatRoom chatRoomId={selectedChatRoomId} friend={currentFriend} onBack={handleBack} />
+        ) : (
+          <div>
+            {userData?.friends ? (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Friends List</h2>
+                <ul className="space-y-4 grid grid-rows-3 gap-y-2">
+                  {userData.friends.map((friend, index) => (
+                    <div key={index} className="flex flex-row items-center space-x-4">
+                      <li className="flex-1">
+                        <div className="relative">
+                          {/* {friend?.isOnline ? (
+                          <div className="avatar online placeholder">
+                            <div className="bg-neutral text-neutral-content w-16 rounded-full">
+                              <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
+                            </div>
                           </div>
-                        </li>
-                        <li>{friend}</li>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => handleStartChat(friend)}
-                        >
-                          Message
-                        </button>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => handleRemoveFriend(friend.handle)}
-                        >
-                          Remove as a friend
-                        </button>
-                      </div>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p>No friends found</p>
-              )}
-            </div>
-          )}
-        </div>
-      );
+                          ) : (
+                          <div className="avatar offline placeholder">
+                            <div className="bg-neutral text-neutral-content w-16 rounded-full">
+                              <span className="text-xl">{friend ? getUserInitials(friend) : 'User'}</span>
+                            </div>
+                          </div>
+                          )} */}
+                        </div>
+                      </li>
+                      <li className="flex-1">{friend}</li>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleStartChat(friend)}
+                      >
+                        Message
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleRemoveFriend(friend)}
+                      >
+                        Remove as a friend
+                      </button>
+                    </div>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <h2 className="text-2xl font-bold mb-4">No friends found</h2>
+            )}
+          </div>
+        )}
+      </div>
+    );
       }

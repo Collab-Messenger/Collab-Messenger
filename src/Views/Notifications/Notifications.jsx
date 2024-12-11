@@ -21,7 +21,7 @@ export const Notifications = () => {
   };
 
   return (
-    <div>
+    <div className="ml-[700px] self-center">
       {friendRequests.length > 0 ? (
         <ul>
           {friendRequests.map((friendRequest, index) => (
@@ -43,7 +43,7 @@ export const Notifications = () => {
           ))}
         </ul>
       ) : (
-        <p>No friend requests</p>
+        <h1 className="text-2xl font-bold mb-4">No friend requests</h1>
       )}
     </div>
   );
