@@ -209,7 +209,7 @@ const Sidebar = () => {
   return (
     <div className={styles.sidebar}>
       <div className="join join-vertical" style={{ display: "flex", flexDirection: "column" }}>
-        <button className="btn join-item">DM's</button>
+        {/* <button className="btn join-item">DM's</button> */}
 
         <div className={styles.sidebar}>
           <div className="join join-vertical" style={{ display: "flex", flexDirection: "column" }}>
@@ -279,9 +279,9 @@ const Sidebar = () => {
         <div className={styles.fixedBottom}></div>
       </div>
       <div className="">
-        <button className="btn join-item" onClick={() => navigate("createChatRoom")}>
+        {/* <button className="btn join-item" onClick={() => navigate("createChatRoom")}>
           +
-        </button>
+        </button> */}
         <ToggleMode />
       </div>
     </div>
