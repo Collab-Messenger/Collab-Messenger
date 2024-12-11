@@ -6,26 +6,33 @@ import { db } from "../../config/firebase-config";
 import styles from "./Sidebar.module.css";
 import { ToggleMode } from "../ToggleMode/ToggleMode";
 
+/**
+ * Sidebar component for user teams and channels management.
+ */
 const Sidebar = () => {
   const { user } = useContext(AppContext);
-  const [teams, setTeams] = useState([]);
-  const [channels, setChannels] = useState({});
-  const [visibleChannels, setVisibleChannels] = useState({});
-  const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
-  const [listeners, setListeners] = useState([]);
+  const [teams, setTeams] = useState([]); // State for storing user's teams
+  const [channels, setChannels] = useState({}); // State for storing channels by team
+  const [visibleChannels, setVisibleChannels] = useState({}); // State for managing visibility of channels
+  const [showTeamsDropdown, setShowTeamsDropdown] = useState(false); // State for toggling teams dropdown visibility
+  const [listeners, setListeners] = useState([]); // State for managing firebase listeners
   const navigate = useNavigate();
 
+  /**
+   * Fetches user handle and their associated teams from Firebase database.
+   */
   useEffect(() => {
     if (!user || !user.uid) return;
 
     const userHandleRef = ref(db, `users`);
     let userHandle = null;
 
+    /**
+     * Fetch user handle and teams from Firebase.
+     */
     const fetchUserHandleAndTeams = async () => {
-
       const handleSnapshot = await get(userHandleRef);
       const allUsers = handleSnapshot.val();
-
 
       userHandle = Object.keys(allUsers).find(
         (handle) => allUsers[handle].uid === user.uid
@@ -34,12 +41,15 @@ const Sidebar = () => {
       if (userHandle) {
         const teamsRef = ref(db, "teams");
 
+        /**
+         * Update teams and channels based on firebase snapshot.
+         */
         const updateTeams = async (snapshot) => {
           const teamId = snapshot.key;
           const teamData = snapshot.val();
           const members = teamData?.members || {};
 
-
+          // If user is a member of this team
           if (Object.values(members).includes(userHandle)) {
             setTeams((prevTeams) => {
               const existingTeam = prevTeams.find((team) => team.id === teamId);
@@ -52,7 +62,7 @@ const Sidebar = () => {
               return [...prevTeams, { id: teamId, ...teamData }];
             });
 
-
+            // Fetch and set team channels
             const teamChannelsRef = ref(db, `teams/${teamId}/channels`);
             const channelsSnapshot = await get(teamChannelsRef);
             if (channelsSnapshot.exists()) {
@@ -68,7 +78,7 @@ const Sidebar = () => {
               }));
             }
 
-
+            // Listen to channel changes
             const onChannelAdded = (snapshot) => {
               const channelId = snapshot.key;
               const channelData = snapshot.val();
@@ -87,7 +97,6 @@ const Sidebar = () => {
             const onChannelChanged = (snapshot) => {
               const channelId = snapshot.key;
               const channelData = snapshot.val();
-
 
               if (channelData.members && channelData.members.includes(userHandle)) {
                 setChannels((prevChannels) => ({
@@ -116,7 +125,7 @@ const Sidebar = () => {
             ];
             setListeners((prevListeners) => [...prevListeners, ...channelListeners]);
           } else {
-
+            // Remove team and its channels if user is no longer a member
             setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
             setChannels((prevChannels) => {
               const updatedChannels = { ...prevChannels };
@@ -155,18 +164,34 @@ const Sidebar = () => {
     };
   }, [user, listeners]);
 
+  /**
+   * Navigate to the team creation page.
+   */
   const handleCreateTeam = () => {
     navigate("/createTeam");
   };
 
+  /**
+   * Navigate to a specific team's page.
+   * @param {string} teamId - The ID of the team to view.
+   */
   const handleViewTeam = (teamId) => {
     navigate(`/teams/${teamId}`);
   };
 
+  /**
+   * Navigate to a specific channel within a team.
+   * @param {string} teamId - The ID of the team.
+   * @param {string} channelId - The ID of the channel to view.
+   */
   const handleViewChannel = (teamId, channelId) => {
     navigate(`/teams/${teamId}/channels/${channelId}`);
   };
 
+  /**
+   * Toggle the visibility of channels for a team.
+   * @param {string} teamId - The ID of the team.
+   */
   const toggleChannelsVisibility = (teamId) => {
     setVisibleChannels((prevState) => ({
       ...prevState,
@@ -174,6 +199,9 @@ const Sidebar = () => {
     }));
   };
 
+  /**
+   * Toggle the visibility of the teams dropdown.
+   */
   const toggleTeamsDropdown = () => {
     setShowTeamsDropdown(!showTeamsDropdown);
   };

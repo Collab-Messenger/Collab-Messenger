@@ -8,37 +8,50 @@ import { auth } from '../../config/firebase-config';
 import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.service';
 import { IoNotifications, IoNotificationsOutline } from "react-icons/io5";
 
-
+/**
+ * Header component for the application.
+ *
+ * @component
+ */
 const Header = () => {
     const navigate = useNavigate();
     const { userData, setAppState } = useContext(AppContext);
-    const [ nameInitials, setNameInitials ] = useState('');
+    const [nameInitials, setNameInitials] = useState('');
     const [notificationCount, setNotificationCount] = useState(0);
 
+    /**
+     * Calculates the initials from user's first and last name.
+     * Updates `nameInitials` state with the initials.
+     */
     useEffect(() => {
         if (userData?.firstName) {
-            const firstNameI = userData?.firstName.split(' ');
-            const lastNameI = userData?.lastName.split(' ');
-            const initialOne = firstNameI.map(name => name[0]).join('');
-            const initialTwo = lastNameI.map(name => name[0]).join('');
-            setNameInitials (initialOne.toUpperCase() + initialTwo.toUpperCase());
-        } else{
-            const firstHandleSymbol = userData?.handle[0].toUpperCase();
-            setNameInitials (firstHandleSymbol);
-
+            const firstNameInitials = userData.firstName.split(' ').map(name => name[0]).join('');
+            const lastNameInitials = userData.lastName.split(' ').map(name => name[0]).join('');
+            setNameInitials(firstNameInitials.toUpperCase() + lastNameInitials.toUpperCase());
+        } else {
+            setNameInitials(userData?.handle[0].toUpperCase());
         }
     }, [userData]);
 
+    /**
+     * Updates notification count when there are changes in friend requests.
+     */
     useEffect(() => {
         if (userData?.friendRequests) {
-          setNotificationCount(userData.friendRequests.length);
+            setNotificationCount(userData.friendRequests.length);
         }
-      }, [userData]);
+    }, [userData]);
 
     console.log(nameInitials);
 
+    /**
+     * Sets the user's status to online.
+     */
     const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
 
+    /**
+     * Sets the user's status to offline.
+     */
     const userStatusOffline = async () => {
         try {
             await setUserOfflineStatus(userData?.handle);
@@ -46,8 +59,7 @@ const Header = () => {
             console.error("Error setting user offline status:", error);
         }
     };
-
-    //const getUserInitials = (userData) => {
+        //const getUserInitials = (userData) => {
     //    if (userData.firstName) {
     //        const firstNameI = userData.firstName.split(' ');
     //        const lastNameI = userData.lastName.split(' ');
@@ -61,6 +73,9 @@ const Header = () => {
     //    }
     //};
 
+    /**
+     * Logs out the user by signing out from Firebase, setting offline status, and clearing app state.
+     */
     const handleLogout = async () => {
         try {
             await auth.signOut();
@@ -83,77 +98,58 @@ const Header = () => {
             </div>
             <div className='flex items-center gap-5'>
                 {userData ? (
-                    <>
-                        <Search />
-                    </>
-                ) : (
-                    null
-                )}
-
-                
-
+                    <Search />
+                ) : null}
             </div>
 
             <div className="flex gap-4 items-center relative mr-5">
                 {/* Profile Button */}
-                {userData? (
-
-                <div className="dropdown dropdown-end">
-                    <div tabIndex={0} role="button" className={`text-gray-900 btn btn-accent btn-circle avatar w-16 h-16 ${userData?.isOnline? "online" : "offline"}`}>
-                        {/*<div className="w-10 rounded-full flex items-center justify-center">*/}
-                            
-                                <div className="placeholder">
-                                    <div className="rounded-full" >
-                                        <span className="text-xl/3">{nameInitials}</span>
-                                    </div>
+                {userData ? (
+                    <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className={`text-gray-900 btn btn-accent btn-circle avatar w-16 h-16 ${userData?.isOnline ? "online" : "offline"}`}>
+                            <div className="placeholder">
+                                <div className="rounded-full">
+                                    <span className="text-xl">{nameInitials}</span>
                                 </div>
-                            
-                        {/*</div>*/}
-                    </div>
-                    <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                        {userData ? (
-                            <>
-                                <NavLink to='/profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
-                                <NavLink to='/friends'><li><a href="#item2">Friends</a></li></NavLink>
-                            </>
-                        ) : (
-                            <>
-                                <NavLink to='/login'><li><a href="#item1">Log In</a></li></NavLink>
-                                <NavLink to='/register'><li><a href="#item2">Register</a></li></NavLink>
-                            </>
-                        )}
+                            </div>
+                        </div>
+                        <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                            <NavLink to='/profile'><li><a href="#item1">Edit Profile</a></li></NavLink>
+                            <NavLink to='/friends'><li><a href="#item2">Friends</a></li></NavLink>
 
-                        {userData && (
-                            <>
-                                {userData?.isOnline ? (
-                                    <li><a href="#item3" onClick={userStatusOffline}>Set Status - Offline</a></li>
-                                ) : (
-                                    <li><a href="#item3" onClick={userStatusOnline}>Set Status - Online</a></li>
-                                )}
-                            </>
-                        )}
-                        {userData && userData.isAdmin && (
-                            <NavLink to='/admin'><li><a href="#item4">Admin Panel</a></li></NavLink>
-                        )}
-                        {userData && (
-                            <li><a href="#item5" onClick={handleLogout}>Logout</a></li>
-                        )}
-                    </ul>
-                </div>
-                ): <>
-                <NavLink to='/login'><li><a href="#item1">Log In</a></li></NavLink>
-                <NavLink to='/register'><li><a href="#item2">Register</a></li></NavLink>
-            </>}
-                <div className="indicator ">
+                            {userData && (
+                                <>
+                                    {userData.isOnline ? (
+                                        <li><a href="#item3" onClick={userStatusOffline}>Set Status - Offline</a></li>
+                                    ) : (
+                                        <li><a href="#item3" onClick={userStatusOnline}>Set Status - Online</a></li>
+                                    )}
+                                </>
+                            )}
+                            {userData && userData.isAdmin && (
+                                <NavLink to='/admin'><li><a href="#item4">Admin Panel</a></li></NavLink>
+                            )}
+                            {userData && (
+                                <li><a href="#item5" onClick={handleLogout}>Logout</a></li>
+                            )}
+                        </ul>
+                    </div>
+                ) : (
+                    <>
+                        <NavLink to='/login'><li><a href="#item1">Log In</a></li></NavLink>
+                        <NavLink to='/register'><li><a href="#item2">Register</a></li></NavLink>
+                    </>
+                )}
+                <div className="indicator">
                     <NavLink to='notifications'>
-                    {notificationCount > 0 ? (
-            <IoNotifications size={20} />
-          ) : (
-            <IoNotificationsOutline size={20} />
-          )}
+                        {notificationCount > 0 ? (
+                            <IoNotifications size={20} />
+                        ) : (
+                            <IoNotificationsOutline size={20} />
+                        )}
                     </NavLink>
-                    {/*Notification bublle*/}
-                    {/*<span className="badge badge-xs badge-primary indicator-item"></span>*/}
+                    {/* Notification bubble */}
+                    {/* <span className="badge badge-xs badge-primary indicator-item"></span> */}
                 </div>
             </div>
         </header>

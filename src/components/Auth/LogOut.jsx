@@ -1,9 +1,18 @@
 import React from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 
+/**
+ * LogoutForm component handles user logout functionality.
+ * @component
+ */
 const LogoutForm = () => {
   const auth = getAuth();
 
+  /**
+   * Handles the user logout process.
+   * @async
+   * @function handleLogout
+   */
   const handleLogout = async () => {
     try {
       await signOut(auth);

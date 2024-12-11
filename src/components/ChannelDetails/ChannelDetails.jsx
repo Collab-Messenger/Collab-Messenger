@@ -11,6 +11,11 @@ import {
   removeMemberFromChannel,
 } from "../../services/channel.service";
 
+/**
+ * ChannelDetails component for displaying and managing channel messages and members
+ * 
+ * @component
+ */
 const ChannelDetails = () => {
   const { teamId, channelId } = useParams();
   const { userData } = useContext(AppContext);
@@ -25,6 +30,9 @@ const ChannelDetails = () => {
   const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
   const navigate = useNavigate();
 
+  /**
+   * Fetches and sets the messages for the channel.
+   */
   useEffect(() => {
     const messagesRef = ref(db, `teams/${teamId}/channels/${channelId}/messages`);
 
@@ -58,6 +66,9 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
+  /**
+   * Fetches and sets the members for the channel.
+   */
   useEffect(() => {
     const membersRef = ref(db, `teams/${teamId}/channels/${channelId}/members`);
 
@@ -75,6 +86,9 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
+  /**
+   * Fetches and sets the team members.
+   */
   useEffect(() => {
     const teamMembersRef = ref(db, `teams/${teamId}/members`);
 
@@ -92,6 +106,9 @@ const ChannelDetails = () => {
     };
   }, [teamId]);
 
+  /**
+   * Fetches and sets the channel info (name and description).
+   */
   useEffect(() => {
     const channelRef = ref(db, `teams/${teamId}/channels/${channelId}`);
     
@@ -110,15 +127,28 @@ const ChannelDetails = () => {
     };
   }, [teamId, channelId]);
 
+  /**
+   * Sets the user data loaded state when userData changes.
+   */
   useEffect(() => {
     if (userData) {
       setIsUserDataLoaded(true);
     }
   }, [userData]);
 
+  /**
+   * Checks if the current user is the owner of the channel.
+   * 
+   * @returns {boolean} - True if the user is the owner, false otherwise.
+   */
   const isOwner =
     channelMembers && channelMembers.length > 0 && channelMembers[0] === userData?.handle;
 
+  /**
+   * Handles sending a new message in the channel.
+   * 
+   * @param {Event} e - The submit event of the message form.
+   */
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!userData || !userData.handle) return;
@@ -133,6 +163,9 @@ const ChannelDetails = () => {
     }
   };
 
+  /**
+   * Handles leaving the channel.
+   */
   const handleLeaveChannel = async () => {
     try {
       await leaveChannel(teamId, channelId, userData.handle);
@@ -150,6 +183,11 @@ const ChannelDetails = () => {
     }
   };
 
+  /**
+   * Handles kicking a member from the channel.
+   * 
+   * @param {string} member - The handle of the member to be kicked.
+   */
   const handleKickMember = async (member) => {
     if (!isOwner) return;
     try {
@@ -159,24 +197,9 @@ const ChannelDetails = () => {
     }
   };
 
-  const handleEditMessage = (msg) => {
-    setEditingMessage(msg);
-  };
-
-  const handleCancelEditing = () => {
-    setEditingMessage(null);
-  };
-
-  const handleSaveMessage = async (messageId) => {
-    try {
-      const messageRef = ref(db, `teams/${teamId}/channels/${channelId}/messages/${messageId}`);
-      await update(messageRef, { text: editingMessage.text });
-      setEditingMessage(null);
-    } catch (error) {
-      console.error("Error saving message:", error);
-    }
-  };
-
+  /**
+   * Handles inviting a new member to the channel.
+   */
   const handleInvite = async () => {
     if (!invitee) return;
     try {
@@ -202,7 +225,6 @@ const ChannelDetails = () => {
           <p className="text-lg" style={{marginBottom: '10px'}}>{channelInfo.description}</p>
         </div>
         <h2 className="text-2xl font-semibold mb-4">Channel Details</h2>
-
 
         <div className="channel-members mb-4">
           <h3 className="text-lg font-semibold">Members:</h3>
