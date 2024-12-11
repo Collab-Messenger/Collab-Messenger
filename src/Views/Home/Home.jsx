@@ -79,7 +79,7 @@ return (
             <>
                 <p>We are thrilled to have you here!</p>
                 <p>You are all set to connect with family and friends through videos and message chat.</p>
-                <p>Dive in, explore and start making meaningful connections. Let's chat!</p>
+                <p>Dive in, explore and start making meaningful connections. Let&apos;s chat!</p>
             </>
         )}
     </div>

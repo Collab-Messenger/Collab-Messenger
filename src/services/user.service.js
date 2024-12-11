@@ -227,11 +227,16 @@ export const removeReplyFromUser = async (handle, replyId) => {
  * @param {string} handle - The handle of the user.
  * @returns {Promise<void>}
  */
-export const blockUser = async (handle) => {
-  const userRef = ref(db, `users/${handle}`);
-  console.log('userRef', userRef);
-  await update(userRef, { isBlocked: true });
-  console.log('456');
+export const blockUser = (handle, callback = () => {}) => {
+    const userRef = ref(db, `users/${handle}`);
+    onValue(userRef, async (snapshot) => {
+        if (snapshot.exists()) {
+            await update(userRef, { isBlocked: true });
+            callback(true);
+        } else {
+            callback(false);
+        }
+    });
 };
 
 /**
@@ -239,9 +244,16 @@ export const blockUser = async (handle) => {
  * @param {string} handle - The handle of the user.
  * @returns {Promise<void>}
  */
-export const unblockUser = async (handle) => {
-  const userRef = ref(db, `users/${handle}`);
-  await update(userRef, { isBlocked: false });
+export const unblockUser = (handle, callback = () => {}) => {
+    const userRef = ref(db, `users/${handle}`);
+    onValue(userRef, async (snapshot) => {
+        if (snapshot.exists()) {
+            await update(userRef, { isBlocked: false });
+            callback(true);
+        } else {
+            callback(false);
+        }
+    });
 };
 
 /**
@@ -249,9 +261,16 @@ export const unblockUser = async (handle) => {
  * @param {string} handle - The handle of the user.
  * @returns {Promise<void>}
  */
-export const makeAdmin = async (handle) => {
-  const userRef = ref(db, `users/${handle}`);
-  await update(userRef, { isAdmin: true });
+export const makeAdmin = (handle, callback = () => {}) => {
+    const userRef = ref(db, `users/${handle}`);
+    onValue(userRef, async (snapshot) => {
+        if (snapshot.exists()) {
+            await update(userRef, { isAdmin: true });
+            callback(true);
+        } else {
+            callback(false);
+        }
+    });
 };
 
 /**
@@ -289,10 +308,17 @@ export const setUserOnlineStatus = async (handle) => {
     await update(userRef, { isOnline: true });
   };
 
-export const setUserOfflineStatus = async (handle) => {
+  export const setUserOfflineStatus = async (handle) => {
+    const db = getDatabase();
     const userRef = ref(db, `users/${handle}`);
-    await update(userRef, { isOnline: false });
-  }
+    try {
+      await update(userRef, { isOnline: false });
+      console.log(`User ${handle} set to offline`); // Debugging log
+    } catch (error) {
+      console.error("Error setting user offline status:", error);
+    }
+  };
+
   export const getFriends = async (userId) => {
     try {
       const userRef = ref(db, `users/${userId}`);

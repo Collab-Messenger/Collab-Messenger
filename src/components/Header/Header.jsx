@@ -6,13 +6,14 @@ import { Search } from '../Search/Search';
 import { PiHandshakeBold } from "react-icons/pi";
 import { auth } from '../../config/firebase-config';
 import { setUserOfflineStatus, setUserOnlineStatus } from '../../services/user.service';
-import { IoNotifications } from "react-icons/io5";
+import { IoNotifications, IoNotificationsOutline } from "react-icons/io5";
 
 
 const Header = () => {
     const navigate = useNavigate();
     const { userData, setAppState } = useContext(AppContext);
     const [ nameInitials, setNameInitials ] = useState('');
+    const [notificationCount, setNotificationCount] = useState(0);
 
     useEffect(() => {
         if (userData?.firstName) {
@@ -28,10 +29,23 @@ const Header = () => {
         }
     }, [userData]);
 
+    useEffect(() => {
+        if (userData?.friendRequests) {
+          setNotificationCount(userData.friendRequests.length);
+        }
+      }, [userData]);
+
     console.log(nameInitials);
 
     const userStatusOnline = () => setUserOnlineStatus(userData?.handle);
-    const userStatusOffline = () => setUserOfflineStatus(userData?.handle);
+
+    const userStatusOffline = async () => {
+        try {
+            await setUserOfflineStatus(userData?.handle);
+        } catch (error) {
+            console.error("Error setting user offline status:", error);
+        }
+    };
 
     //const getUserInitials = (userData) => {
     //    if (userData.firstName) {
@@ -87,13 +101,13 @@ const Header = () => {
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className={`text-gray-900 btn btn-accent btn-circle avatar w-16 h-16 ${userData?.isOnline? "online" : "offline"}`}>
                         {/*<div className="w-10 rounded-full flex items-center justify-center">*/}
-                            {userData?.isOnline && (
+                            
                                 <div className="placeholder">
                                     <div className="rounded-full" >
                                         <span className="text-xl/4">{nameInitials}</span>
                                     </div>
                                 </div>
-                            )}
+                            
                         {/*</div>*/}
                     </div>
                     <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
@@ -132,7 +146,11 @@ const Header = () => {
             </>}
                 <div className="indicator ">
                     <NavLink to='notifications'>
-                    <IoNotifications size={20}/>
+                    {notificationCount > 0 ? (
+            <IoNotifications size={20} />
+          ) : (
+            <IoNotificationsOutline size={20} />
+          )}
                     </NavLink>
                     {/*Notification bublle*/}
                     {/*<span className="badge badge-xs badge-primary indicator-item"></span>*/}
