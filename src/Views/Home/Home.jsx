@@ -58,9 +58,11 @@ export function Home() {
      * @param {string} handle - The handle of the user to send a friend request to.
      */
     const handleSendFriendRequest = (handle) => {
-        addFriendRequestToUser(handle, userData.handle); // Call service function to send friend request
-        setUsers(users.filter(user => user.handle !== handle)); // Remove the user from the list
-        alert('Friend request sent to ' + handle); // Show success alert
+        if (userData && userData.handle) {
+            addFriendRequestToUser(handle, userData.handle); // Call service function to send friend request
+            setUsers(users.filter(user => user.handle !== handle)); // Remove the user from the list
+            alert('Friend request sent to ' + handle); // Show success alert
+        }
     };
 
     return (
@@ -71,7 +73,7 @@ export function Home() {
                     {users
                         .filter(user =>
                             user.uid !== userData?.uid && // Exclude current user
-                            (!user.friendRequests || !user.friendRequests.includes(userData?.handle)) // Exclude users who already have a friend request
+                            (!user.friendRequests || Array.isArray(user.friendRequests) && !user.friendRequests.includes(userData?.handle)) // Check if friendRequests exists and if it includes the current user's handle
                         )
                         .map(user => (
                             <div key={user.uid} className="flex items-center space-x-10">
