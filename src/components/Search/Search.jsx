@@ -1,22 +1,35 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { searchUsers } from "../../services/user.service";
 
 export const Search = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const search = searchParams.get('search') ?? '';
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
+
+
+  useEffect(() => {
+    setSearch(searchParams.get('search') ?? '');
+  }, [searchParams]);
 
   const handleSearchClick = async () => {
     try {
+      console.log('Updating URL and performing search for:', search);
+      
+      setSearchParams({ search });
+
       const results = await searchUsers(search);
+      console.log('Search results:', results);
+
       navigate('/', { state: { users: results } });
     } catch (err) {
-      alert(err);
+      console.error('Error during search:', err);
+      alert('An error occurred while searching. Please try again.');
     }
   };
 
-  const setSearch = (value) => {
-    setSearchParams({ search: value });
+  const handleInputChange = (value) => {
+    setSearch(value);
   };
 
   const handleKeyPress = (e) => {
@@ -32,7 +45,8 @@ export const Search = () => {
           type="text"
           className="grow"
           placeholder="Search"
-          onChange={(e) => setSearch(e.target.value)}
+          value={search}
+          onChange={(e) => handleInputChange(e.target.value)}
           onKeyPress={handleKeyPress}
         />
         <button onClick={handleSearchClick}>Search</button>
