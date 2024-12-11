@@ -23,7 +23,7 @@ return (
         {users.length > 0 ? (
             <ul className="space-y-2 grid grid-rows-3 gap-y-2">
                 {users.filter((user) => user.handle !== userData?.handle).map((user) => (
-                    <li key={user.uid} className="flex justify-between items-center mb-2">
+                    <li key={user.uid} className="flex justify-between items-center mb-2 space-x-2">
                         <span>{user.handle}</span>
                         <div className="flex space-x-2">
                             {user.isAdmin ? (
