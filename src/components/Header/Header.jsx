@@ -104,7 +104,7 @@ const Header = () => {
                             
                                 <div className="placeholder">
                                     <div className="rounded-full" >
-                                        <span className="text-xl/4">{nameInitials}</span>
+                                        <span className="text-xl/3">{nameInitials}</span>
                                     </div>
                                 </div>
                             
