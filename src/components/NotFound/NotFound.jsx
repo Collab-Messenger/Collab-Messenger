@@ -23,6 +23,9 @@ Who knows, maybe the missing page is just shy. 😅
 
 🎬 PS: No videos or chats were harmed in the making of this error.</h1>
 </div>
+<div>
+    <img src="https://cdn.dribbble.com/users/381530/screenshots/3949858/media/aff8c4541abddf91b8f69206b2175381.gif" alt="404" />
+</div>
     </div>
   );
 };
