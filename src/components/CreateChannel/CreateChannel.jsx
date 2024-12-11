@@ -1,5 +1,14 @@
 import React, { useState } from "react";
 
+/**
+ * CreateChannel component for creating a new channel within a team.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.teamId - The ID of the team for which the channel is being created.
+ * @param {string} props.teamOwner - The owner of the team creating the channel.
+ * @param {function} props.onChannelCreated - Callback function to be called with the new channel data when it's created.
+ */
 const CreateChannel = ({ teamId, teamOwner, onChannelCreated }) => {
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
@@ -7,6 +16,11 @@ const CreateChannel = ({ teamId, teamOwner, onChannelCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /**
+   * Handles the form submission to create a new channel.
+   * 
+   * @param {Event} e - The form submit event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -26,7 +40,7 @@ const CreateChannel = ({ teamId, teamOwner, onChannelCreated }) => {
       console.log("Submitting channel:", channelData);
 
       setError("");
-      onChannelCreated(channelData);
+      onChannelCreated(channelData); // Call the callback function with the new channel data
 
     } catch (error) {
       setError("Error creating channel: " + error.message);
