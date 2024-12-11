@@ -109,7 +109,7 @@ const Header = () => {
                         <div tabIndex={0} role="button" className={`text-gray-900 btn btn-accent btn-circle avatar w-16 h-16 ${userData?.isOnline ? "online" : "offline"}`}>
                             <div className="placeholder">
                                 <div className="rounded-full">
-                                    <span className="text-xl">{nameInitials}</span>
+                                    <span className="text-xl/3">{nameInitials}</span>
                                 </div>
                             </div>
                         </div>
